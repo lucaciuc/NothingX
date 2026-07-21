@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
     - uses: actions/checkout@v4
@@ -32,3 +34,12 @@ jobs:
       with:
         name: Nothing X-Executable
         path: "./publish/Nothing X.exe"
+
+    - name: Create GitHub Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: "latest"
+        name: "Latest Build"
+        files: "./publish/Nothing X.exe"
+        prerelease: true
