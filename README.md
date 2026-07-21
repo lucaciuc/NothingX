@@ -11,10 +11,10 @@ This allows you to manage, customize, and view the status of your Nothing audio 
 ## How it works
 By reverse-engineering the APK, the app replicates the exact Bluetooth packets and commands the official mobile app uses to communicate with Nothing devices. It is built as a native Windows Presentation Foundation (WPF) application.
 
-## Installation
-1. Go to the [Releases](../../releases) tab on the right side of this GitHub repository.
-2. Download the latest `Nothing X.exe` file.
-3. Run the executable and connect your Nothing devices!
+## Installation & Usage
+1. **Pair your device:** First, ensure your Nothing earbuds or headphones are paired and actively connected to your Windows PC via the standard Windows Bluetooth settings.
+2. **Download the app:** Go to the [Releases](../../releases) tab on the right side of this GitHub repository and download the latest `Nothing X.exe` file.
+3. **Connect:** Run the executable, scan for your devices within the app, and connect to them to start managing your settings!
 
 ---
 *Disclaimer: This is an unofficial, community-made project. It is not affiliated with, endorsed by, or associated with Nothing Technology Limited. All product names, logos, and brands are property of their respective owners.*
