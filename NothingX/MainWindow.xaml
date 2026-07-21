@@ -1,0 +1,435 @@
+<Window x:Class="NothingX.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NothingX"
+        xmlns:viewmodels="clr-namespace:NothingX.ViewModels"
+        xmlns:controls="clr-namespace:NothingX.Controls"
+        mc:Ignorable="d"
+        Title="Nothing X" Height="800" Width="450"
+        WindowStyle="None" AllowsTransparency="False" Background="{StaticResource BrushBlack}"
+        WindowStartupLocation="CenterScreen">
+    
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="40" ResizeBorderThickness="6" CornerRadius="8" GlassFrameThickness="0" UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+    
+    <Window.DataContext>
+        <viewmodels:MainViewModel />
+    </Window.DataContext>
+
+    <Window.Resources>
+        <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+        <local:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter"/>
+    </Window.Resources>
+
+    <!-- App Container -->
+    <Border Background="{StaticResource BrushBlack}" BorderBrush="{StaticResource BrushDarkGray}" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Custom Title Bar for Dragging -->
+            <Grid Grid.Row="0" Height="40" Background="Transparent">
+                <TextBlock Text="Nothing X" Foreground="{StaticResource BrushLightGray}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                <!-- Window Controls -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True">
+                    <Button Content="−" Width="40" Background="Transparent" Foreground="{StaticResource BrushLightGray}" Click="MinimizeButton_Click" Padding="0"/>
+                    <Button Content="⬜" Width="40" Background="Transparent" Foreground="{StaticResource BrushLightGray}" Click="MaximizeButton_Click" Padding="0" FontSize="10"/>
+                    <Button Content="✕" Width="40" Background="Transparent" Foreground="{StaticResource BrushLightGray}" Click="CloseButton_Click" Padding="0"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Main Content Area -->
+            <Grid Grid.Row="1">
+                
+                <!-- CONNECT VIEW -->
+                <Grid Visibility="{Binding SelectedDeviceView, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=connect}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="300">
+                        <TextBlock Text="Connect Device" Style="{StaticResource DeviceTitleText}"/>
+                        <TextBlock Text="Ensure your earbuds are paired in Windows Bluetooth settings." TextWrapping="Wrap" Style="{StaticResource SubHeadingText}" TextAlignment="Center" Margin="0,0,0,30"/>
+                        
+                        <Button Content="Scan for Devices" Command="{Binding ScanDevicesCommand}" Margin="0,0,0,20"/>
+                        
+                        <ListBox ItemsSource="{Binding DiscoveredDevices}" MinHeight="150" MaxHeight="300" Margin="0,10"
+                                 SelectedItem="{Binding SelectedDevice, Mode=TwoWay}" Background="{StaticResource BrushDarkGray}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="10">
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16"/>
+                                        <TextBlock Text="{Binding Address}" Style="{StaticResource SubHeadingText}" FontSize="12"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <Button Content="Connect" Command="{Binding ConnectToDeviceCommand}" CommandParameter="{Binding SelectedDevice}"
+                                IsEnabled="{Binding IsConnecting, Converter={StaticResource InverseBooleanConverter}}" Margin="0,20,0,0"/>
+                        
+                        <ProgressBar IsIndeterminate="True" Height="4" Margin="0,20" Foreground="{StaticResource BrushWhite}" Background="{StaticResource BrushDarkGray}" BorderThickness="0" Visibility="{Binding IsConnecting, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- DEVICE VIEW -->
+                <Grid Visibility="{Binding SelectedDeviceView, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=device}">
+                    <ScrollViewer VerticalScrollBarVisibility="Hidden" Margin="0,0,0,20">
+                        <StackPanel>
+                            <!-- Header: Image and Title -->
+                            <TextBlock Text="{Binding DeviceName}" Style="{StaticResource DeviceTitleText}"/>
+                            
+                            <!-- Battery Row -->
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,20">
+                                <TextBlock Text="⚡" Foreground="LightGreen" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding BatteryLeft, StringFormat='{}{0}%'}" Foreground="{StaticResource BrushLightGray}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <!-- Debug Status Text -->
+                            <TextBlock Text="{Binding StatusText}" Foreground="Yellow" FontSize="12" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+                            <!-- Noise Cancellation Card -->
+                            <Border Style="{StaticResource CardBorder}" Margin="15,20">
+                                <StackPanel>
+                                    <TextBlock Text="Noise cancellation" Style="{StaticResource HeadingText}" Margin="20,20,20,25"/>
+                                    <Grid Margin="10,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <RadioButton Grid.Column="0" Content="On" Tag="○" Command="{Binding SetAncModeCommand}" CommandParameter="NoiseCancellation" Style="{StaticResource AncToggleButton}" IsChecked="{Binding CurrentAncMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=NoiseCancellation, Mode=OneWay}"/>
+                                        <RadioButton Grid.Column="1" Content="Transparency" Tag="⋮" Command="{Binding SetAncModeCommand}" CommandParameter="Transparency" Style="{StaticResource AncToggleButton}" IsChecked="{Binding CurrentAncMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Transparency, Mode=OneWay}"/>
+                                        <RadioButton Grid.Column="2" Content="Off" Tag="⊘" Command="{Binding SetAncModeCommand}" CommandParameter="Off" Style="{StaticResource AncToggleButton}" IsChecked="{Binding CurrentAncMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Off, Mode=OneWay}"/>
+                                    </Grid>
+                                    
+                                    <!-- ANC Level Selector (Only visible when ANC is On) -->
+                                    <StackPanel Margin="20,10,20,0" Visibility="{Binding CurrentAncMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=NoiseCancellation}">
+                                        <TextBlock Text="Level" Foreground="{StaticResource BrushWhite}" FontSize="12" Margin="0,0,0,5"/>
+                                        <UniformGrid Columns="4" Height="40">
+                                            <RadioButton Content="High" Style="{StaticResource EqTabButton}" Command="{Binding ApplyAncLevelCommand}" CommandParameter="1" IsChecked="{Binding AncLevel, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=1, Mode=OneWay}"/>
+                                            <RadioButton Content="Mid" Style="{StaticResource EqTabButton}" Command="{Binding ApplyAncLevelCommand}" CommandParameter="2" IsChecked="{Binding AncLevel, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=2, Mode=OneWay}" Margin="5,0,0,0"/>
+                                            <RadioButton Content="Low" Style="{StaticResource EqTabButton}" Command="{Binding ApplyAncLevelCommand}" CommandParameter="3" IsChecked="{Binding AncLevel, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=3, Mode=OneWay}" Margin="5,0,0,0"/>
+                                            <RadioButton Content="Adaptive" Style="{StaticResource EqTabButton}" Command="{Binding ApplyAncLevelCommand}" CommandParameter="5" IsChecked="{Binding AncLevel, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=5, Mode=OneWay}" Margin="5,0,0,0"/>
+                                        </UniformGrid>
+                                    </StackPanel>
+
+                                    <TextBlock Text="SWITCH BETWEEN NOISE CANCELLATION MODES" Style="{StaticResource DotMatrixText}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Equaliser Card -->
+                            <Border Style="{StaticResource CardBorder}" Margin="15,20">
+                                <StackPanel>
+                                    <Grid Margin="20,20,20,25">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Equaliser" Style="{StaticResource HeadingText}" Margin="0"/>
+                                        
+                                        <!-- Tabs -->
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <RadioButton Content="SIMPLE" Style="{StaticResource EqTabButton}" IsChecked="{Binding IsAdvancedEqMode, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" Command="{Binding ToggleAdvancedEqCommand}" CommandParameter="False"/>
+                                            <RadioButton Content="ADVANCED" Style="{StaticResource EqTabButton}" Margin="10,0,0,0" IsChecked="{Binding IsAdvancedEqMode, Mode=OneWay}" Command="{Binding ToggleAdvancedEqCommand}" CommandParameter="True"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    
+                                    <!-- Simple EQ View -->
+                                    <Grid Visibility="{Binding IsAdvancedEqMode, Converter={StaticResource InverseBooleanConverter}}">
+                                        <StackPanel>
+                                            <!-- Presets -->
+                                            <UniformGrid Rows="2" Columns="2" Margin="15,0,15,20">
+                                                <RadioButton Content="BALANCED" Command="{Binding SetEqPresetCommand}" CommandParameter="Balanced" Style="{StaticResource EqPresetButton}" IsChecked="{Binding CurrentEqPreset, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Balanced, Mode=OneWay}"/>
+                                                <RadioButton Content="MORE BASS" Command="{Binding SetEqPresetCommand}" CommandParameter="MoreBass" Style="{StaticResource EqPresetButton}" IsChecked="{Binding CurrentEqPreset, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MoreBass, Mode=OneWay}"/>
+                                                <RadioButton Content="MORE TREBLE" Command="{Binding SetEqPresetCommand}" CommandParameter="MoreTreble" Style="{StaticResource EqPresetButton}" IsChecked="{Binding CurrentEqPreset, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MoreTreble, Mode=OneWay}"/>
+                                                <RadioButton Content="VOICE" Command="{Binding SetEqPresetCommand}" CommandParameter="Voice" Style="{StaticResource EqPresetButton}" IsChecked="{Binding CurrentEqPreset, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Voice, Mode=OneWay}"/>
+                                            </UniformGrid>
+
+                                            <!-- Simple Custom 3-Band EQ -->
+                                            <controls:CircularEqControl Width="220" Height="220" Margin="15,10,15,10"
+                                                                        BassValue="{Binding SimpleEqBass, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                        MidValue="{Binding SimpleEqMid, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                        TrebleValue="{Binding SimpleEqTreble, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                            <Button Content="APPLY SIMPLE EQ" Command="{Binding ApplySimpleEqCommand}" Background="{StaticResource BrushRed}" Margin="15,20,15,0"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Advanced 8-Band EQ View -->
+                                    <Grid Visibility="{Binding IsAdvancedEqMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <StackPanel>
+                                            <ItemsControl ItemsSource="{Binding CustomEqBands}" Margin="15,0,15,10">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <UniformGrid Rows="1"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel HorizontalAlignment="Center">
+                                                            <Slider Orientation="Vertical" Height="150" Minimum="-6" Maximum="6" Value="{Binding Gain, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                                                    TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,0,0,10"/>
+                                                            <TextBlock Text="{Binding Gain, StringFormat={}{0:F0}}" Foreground="{StaticResource BrushWhite}" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding Label}" Foreground="{StaticResource BrushLightGray}" FontSize="10" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <Button Content="APPLY ADVANCED EQ" Command="{Binding ApplyCustomEqCommand}" Background="{StaticResource BrushRed}" Margin="15,20,15,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    
+                                    <TextBlock Text="PERSONALISE EQUALISER SETTINGS" Style="{StaticResource DotMatrixText}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Audio Enhancements Card -->
+                            <Border Style="{StaticResource CardBorder}" Margin="15,20">
+                                <StackPanel>
+                                    <TextBlock Text="Audio Enhancements" Style="{StaticResource HeadingText}" Margin="20,20,20,25"/>
+                                    
+                                    <StackPanel Margin="20,10,20,10">
+                                        <!-- Spatial Audio -->
+                                        <Grid Margin="0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Spatial Audio" Foreground="{StaticResource BrushWhite}" FontSize="16" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Immersive 3D audio experience" Foreground="{StaticResource BrushLightGray}" FontSize="12" Margin="0,5,0,0"/>
+                                            </StackPanel>
+                                            <ToggleButton Grid.Column="1" Style="{StaticResource CustomToggleSwitchStyle}" IsChecked="{Binding SpatialAudioEnabled}" Command="{Binding ToggleSpatialAudioCommand}" VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <!-- Bass Enhancer -->
+                                        <Grid Margin="0,15">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Bass Enhancer" Foreground="{StaticResource BrushWhite}" FontSize="16" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Dynamic low-frequency boost" Foreground="{StaticResource BrushLightGray}" FontSize="12" Margin="0,5,0,0"/>
+                                                <Slider Minimum="1" Maximum="2" Value="{Binding UltraBassLevel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,15,20,0" IsEnabled="{Binding UltraBassEnabled}" Style="{StaticResource HorizontalSliderStyle}"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                                                <Button Content="APPLY" Command="{Binding ApplyUltraBassCommand}" Background="{StaticResource BrushDarkGray}" Foreground="{StaticResource BrushLightGray}" Padding="15,5" BorderThickness="0" Cursor="Hand" Margin="0,0,15,0" VerticalAlignment="Center"/>
+                                                <ToggleButton Style="{StaticResource CustomToggleSwitchStyle}" IsChecked="{Binding UltraBassEnabled}" Command="{Binding ApplyUltraBassCommand}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <!-- High-Quality Audio (LDAC) -->
+                                        <Grid Margin="0,15,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="High-Quality Audio" Foreground="{StaticResource BrushWhite}" FontSize="16" FontWeight="SemiBold"/>
+                                                <TextBlock Text="Enable LDAC for high-res sound" Foreground="{StaticResource BrushLightGray}" FontSize="12" Margin="0,5,0,0"/>
+                                            </StackPanel>
+                                            <ToggleButton Grid.Column="1" Style="{StaticResource CustomToggleSwitchStyle}" IsChecked="{Binding HighQualityAudioEnabled}" Command="{Binding ToggleHighQualityAudioCommand}" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </StackPanel>
+                                    
+                                    <TextBlock Text="ENHANCE YOUR AUDIO EXPERIENCE" Style="{StaticResource DotMatrixText}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Gestures & Settings Row -->
+                            <Grid Margin="15,20,15,40">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <Border Grid.Column="0" Background="{StaticResource BrushDarkGray}" CornerRadius="20" Padding="25">
+                                    <Border.InputBindings>
+                                        <MouseBinding Gesture="LeftClick" Command="{Binding ShowControlsCommand}" />
+                                    </Border.InputBindings>
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Cursor" Value="Hand" />
+                                            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                                            <Setter Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Opacity" Value="0.8"/>
+                                                </Trigger>
+                                                <EventTrigger RoutedEvent="MouseEnter">
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.03" Duration="0:0:0.1" />
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.03" Duration="0:0:0.1" />
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </EventTrigger>
+                                                <EventTrigger RoutedEvent="MouseLeave">
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15" />
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15" />
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </EventTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="Controls" Foreground="{StaticResource BrushWhite}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                        <TextBlock Text="Customised" Foreground="{StaticResource BrushLightGray}" FontSize="14"/>
+                                        <TextBlock Text="👆" FontSize="28" Foreground="{StaticResource BrushWhite}" HorizontalAlignment="Left" Margin="0,30,0,0"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="2" Background="{StaticResource BrushDarkGray}" CornerRadius="20" Padding="25">
+                                    <Border.InputBindings>
+                                        <MouseBinding Gesture="LeftClick" Command="{Binding ShowSettingsCommand}" />
+                                    </Border.InputBindings>
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Cursor" Value="Hand" />
+                                            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                                            <Setter Property="RenderTransform">
+                                                <Setter.Value>
+                                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Opacity" Value="0.8"/>
+                                                </Trigger>
+                                                <EventTrigger RoutedEvent="MouseEnter">
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.03" Duration="0:0:0.1" />
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.03" Duration="0:0:0.1" />
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </EventTrigger>
+                                                <EventTrigger RoutedEvent="MouseLeave">
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15" />
+                                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15" />
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </EventTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel>
+                                        <TextBlock Text="Settings" Foreground="{StaticResource BrushWhite}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                                        <TextBlock Text="Firmware &amp; More" Foreground="{StaticResource BrushLightGray}" FontSize="14"/>
+                                        <TextBlock Text="⚙" FontSize="28" Foreground="{StaticResource BrushWhite}" HorizontalAlignment="Left" Margin="0,30,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+
+                <!-- CONTROLS VIEW -->
+                <Grid Visibility="{Binding SelectedDeviceView, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=controls}">
+                    <StackPanel>
+                        <!-- Header with Back Button -->
+                        <Grid Margin="15,10">
+                            <Button Content="← Back" HorizontalAlignment="Left" Background="Transparent" Foreground="{StaticResource BrushWhite}" Command="{Binding GoBackToDeviceCommand}"/>
+                            <TextBlock Text="Controls" Style="{StaticResource HeadingText}" HorizontalAlignment="Center" Margin="0"/>
+                        </Grid>
+                        
+                        <ScrollViewer VerticalScrollBarVisibility="Hidden">
+                            <StackPanel>
+                                <Border Style="{StaticResource CardBorder}" Margin="15,10">
+                                    <StackPanel Margin="20">
+                                        <TextBlock Text="Left Earbud" Foreground="{StaticResource BrushWhite}" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,15"/>
+                                        <Grid Margin="0,0,0,10">
+                                            <TextBlock Text="Double Tap" Foreground="{StaticResource BrushLightGray}"/>
+                                            <ComboBox HorizontalAlignment="Right" Width="120" ItemsSource="{Binding AvailableGestureActions}" SelectedItem="{Binding LeftDoubleTap}"/>
+                                        </Grid>
+                                        <Grid Margin="0,0,0,10">
+                                            <TextBlock Text="Triple Tap" Foreground="{StaticResource BrushLightGray}"/>
+                                            <ComboBox HorizontalAlignment="Right" Width="120" ItemsSource="{Binding AvailableGestureActions}" SelectedItem="{Binding LeftTripleTap}"/>
+                                        </Grid>
+                                        <Grid>
+                                            <TextBlock Text="Long Press" Foreground="{StaticResource BrushLightGray}"/>
+                                            <ComboBox HorizontalAlignment="Right" Width="120" ItemsSource="{Binding AvailableGestureActions}" SelectedItem="{Binding LeftLongPress}"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                                
+                                <Border Style="{StaticResource CardBorder}" Margin="15,10">
+                                    <StackPanel Margin="20">
+                                        <TextBlock Text="Right Earbud" Foreground="{StaticResource BrushWhite}" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,15"/>
+                                        <Grid Margin="0,0,0,10">
+                                            <TextBlock Text="Double Tap" Foreground="{StaticResource BrushLightGray}"/>
+                                            <ComboBox HorizontalAlignment="Right" Width="120" ItemsSource="{Binding AvailableGestureActions}" SelectedItem="{Binding RightDoubleTap}"/>
+                                        </Grid>
+                                        <Grid Margin="0,0,0,10">
+                                            <TextBlock Text="Triple Tap" Foreground="{StaticResource BrushLightGray}"/>
+                                            <ComboBox HorizontalAlignment="Right" Width="120" ItemsSource="{Binding AvailableGestureActions}" SelectedItem="{Binding RightTripleTap}"/>
+                                        </Grid>
+                                        <Grid>
+                                            <TextBlock Text="Long Press" Foreground="{StaticResource BrushLightGray}"/>
+                                            <ComboBox HorizontalAlignment="Right" Width="120" ItemsSource="{Binding AvailableGestureActions}" SelectedItem="{Binding RightLongPress}"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                                
+                                <Button Content="APPLY CONTROLS" Command="{Binding SyncGesturesCommand}" Margin="15,20,15,30"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </StackPanel>
+                </Grid>
+
+                <!-- SETTINGS VIEW -->
+                <Grid Visibility="{Binding SelectedDeviceView, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=settings}">
+                    <StackPanel>
+                        <Grid Margin="15,10">
+                            <Button Content="← Back" HorizontalAlignment="Left" Background="Transparent" Foreground="{StaticResource BrushWhite}" Command="{Binding GoBackToDeviceCommand}"/>
+                            <TextBlock Text="Settings" Style="{StaticResource HeadingText}" HorizontalAlignment="Center" Margin="0"/>
+                        </Grid>
+                        
+                        <Border Style="{StaticResource CardBorder}" Margin="15,10">
+                            <StackPanel Margin="20">
+                                <Grid Margin="0,0,0,20">
+                                    <TextBlock Text="Firmware Version" Foreground="{StaticResource BrushWhite}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding FirmwareVersion}" Foreground="{StaticResource BrushLightGray}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                
+                                <Grid Margin="0,0,0,20">
+                                    <TextBlock Text="Standby Auto Power-Off" Foreground="{StaticResource BrushWhite}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <ComboBox Width="120" SelectedValuePath="Tag" SelectedValue="{Binding AutoPowerOffTime}">
+                                            <ComboBoxItem Content="Never" Tag="0"/>
+                                            <ComboBoxItem Content="30 mins" Tag="30"/>
+                                            <ComboBoxItem Content="60 mins" Tag="60"/>
+                                            <ComboBoxItem Content="120 mins" Tag="120"/>
+                                        </ComboBox>
+                                        <Button Content="APPLY" Command="{Binding ApplyAutoPowerOffCommand}" Background="{StaticResource BrushDarkGray}" Foreground="{StaticResource BrushLightGray}" Padding="15,5" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                                
+                                <Button Content="DISCONNECT" Background="{StaticResource BrushDarkGray}" Foreground="{StaticResource BrushRed}" BorderThickness="1" BorderBrush="{StaticResource BrushRed}" Command="{Binding DisconnectDeviceCommand}" Margin="0,20,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

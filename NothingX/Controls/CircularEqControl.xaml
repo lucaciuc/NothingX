@@ -1,0 +1,58 @@
+<UserControl x:Class="NothingX.Controls.CircularEqControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="250" d:DesignWidth="250"
+             SizeChanged="UserControl_SizeChanged">
+    <Grid>
+        <!-- Background Circle -->
+        <Ellipse x:Name="BgCircle" Fill="#1A1A1A" Stroke="#333333" StrokeThickness="1"/>
+
+        <!-- Center Dot -->
+        <Ellipse Width="10" Height="10" Fill="#000000" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+        <!-- Axes lines (drawn in code-behind for accuracy) -->
+        <Canvas x:Name="AxesCanvas" IsHitTestVisible="False"/>
+
+        <!-- Blob Polygon -->
+        <Polygon x:Name="EqBlob" Fill="#33FFFFFF" Stroke="#66FFFFFF" StrokeThickness="2" StrokeLineJoin="Round" IsHitTestVisible="False"/>
+
+        <!-- Draggable Thumbs -->
+        <Canvas x:Name="ThumbCanvas">
+            <!-- Labels -->
+            <TextBlock x:Name="MidLabel" Text="Mid" Foreground="#888888" FontSize="12" FontFamily="Consolas" IsHitTestVisible="False"/>
+            <TextBlock x:Name="BassLabel" Text="Bass" Foreground="#888888" FontSize="12" FontFamily="Consolas" IsHitTestVisible="False"/>
+            <TextBlock x:Name="TrebleLabel" Text="Treble" Foreground="#888888" FontSize="12" FontFamily="Consolas" IsHitTestVisible="False"/>
+
+            <!-- Value Labels (shown near each thumb) -->
+            <TextBlock x:Name="MidValueLabel" Text="0" Foreground="White" FontSize="11" FontWeight="Bold" FontFamily="Consolas" IsHitTestVisible="False"/>
+            <TextBlock x:Name="BassValueLabel" Text="0" Foreground="White" FontSize="11" FontWeight="Bold" FontFamily="Consolas" IsHitTestVisible="False"/>
+            <TextBlock x:Name="TrebleValueLabel" Text="0" Foreground="White" FontSize="11" FontWeight="Bold" FontFamily="Consolas" IsHitTestVisible="False"/>
+
+            <!-- Thumbs -->
+            <Thumb x:Name="MidThumb" DragDelta="Thumb_DragDelta" Tag="Mid" Cursor="Hand">
+                <Thumb.Template>
+                    <ControlTemplate>
+                        <Ellipse Width="20" Height="20" Fill="White" Margin="-10,-10,0,0"/>
+                    </ControlTemplate>
+                </Thumb.Template>
+            </Thumb>
+            <Thumb x:Name="BassThumb" DragDelta="Thumb_DragDelta" Tag="Bass" Cursor="Hand">
+                <Thumb.Template>
+                    <ControlTemplate>
+                        <Ellipse Width="20" Height="20" Fill="White" Margin="-10,-10,0,0"/>
+                    </ControlTemplate>
+                </Thumb.Template>
+            </Thumb>
+            <Thumb x:Name="TrebleThumb" DragDelta="Thumb_DragDelta" Tag="Treble" Cursor="Hand">
+                <Thumb.Template>
+                    <ControlTemplate>
+                        <Ellipse Width="20" Height="20" Fill="White" Margin="-10,-10,0,0"/>
+                    </ControlTemplate>
+                </Thumb.Template>
+            </Thumb>
+        </Canvas>
+    </Grid>
+</UserControl>
