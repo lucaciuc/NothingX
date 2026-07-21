@@ -92,9 +92,8 @@ public class PacketParser
 
         if (packet != null && hasCrc && !packet.VerifyCrc())
         {
-            // CRC mismatch, discard packet
+            // CRC mismatch, log but do not discard packet
             Console.WriteLine($"[Parser] CRC mismatch for packet: {packet} (Length: {length})");
-            packet = null;
         }
 
         return true;
