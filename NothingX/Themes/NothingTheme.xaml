@@ -270,35 +270,28 @@
         </Setter>
     </Style>
 
-    <!-- Horizontal Slider for Bass Enhancer -->
-    <Style x:Key="HorizontalSliderStyle" TargetType="Slider">
-        <Setter Property="Background" Value="{StaticResource BrushDarkGray}"/>
-        <Setter Property="Foreground" Value="{StaticResource BrushRed}"/>
+    <!-- Bass Enhancer Slider Style with T-shaped Thumb -->
+    <Style x:Key="BassEnhancerSliderStyle" TargetType="Slider">
+        <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Height" Value="30"/>
         <Setter Property="Orientation" Value="Horizontal"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Slider">
-                    <Border Background="Transparent" Padding="0,5">
-                        <Grid VerticalAlignment="Center">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <!-- Track Background -->
-                            <Border x:Name="TrackBackground" Height="4" Background="{StaticResource BrushButtonGray}" CornerRadius="2" VerticalAlignment="Center"/>
-                            
-                            <Track x:Name="PART_Track" Grid.Row="0">
+                    <Border Background="Transparent">
+                        <Grid VerticalAlignment="Bottom" Height="22">
+                            <Track x:Name="PART_Track">
                                 <Track.DecreaseRepeatButton>
-                                    <RepeatButton Command="{x:Static Slider.DecreaseLarge}">
+                                    <RepeatButton Command="{x:Static Slider.DecreaseLarge}" Style="{x:Null}" Background="Transparent" BorderThickness="0">
                                         <RepeatButton.Template>
                                             <ControlTemplate TargetType="RepeatButton">
-                                                <Border Background="{StaticResource BrushRed}" Height="4" CornerRadius="2"/>
+                                                <Border Background="Transparent"/>
                                             </ControlTemplate>
                                         </RepeatButton.Template>
                                     </RepeatButton>
                                 </Track.DecreaseRepeatButton>
                                 <Track.IncreaseRepeatButton>
-                                    <RepeatButton Command="{x:Static Slider.IncreaseLarge}">
+                                    <RepeatButton Command="{x:Static Slider.IncreaseLarge}" Style="{x:Null}" Background="Transparent" BorderThickness="0">
                                         <RepeatButton.Template>
                                             <ControlTemplate TargetType="RepeatButton">
                                                 <Border Background="Transparent"/>
@@ -307,10 +300,13 @@
                                     </RepeatButton>
                                 </Track.IncreaseRepeatButton>
                                 <Track.Thumb>
-                                    <Thumb x:Name="Thumb" Width="18" Height="18" Background="{StaticResource BrushWhite}">
+                                    <Thumb x:Name="Thumb" Width="14" Height="22" Background="{StaticResource BrushWhite}">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Ellipse Fill="{TemplateBinding Background}"/>
+                                                <Grid Background="Transparent">
+                                                    <Border Width="14" Height="4" Background="{TemplateBinding Background}" CornerRadius="2" VerticalAlignment="Top"/>
+                                                    <Border Width="4" Height="18" Background="{TemplateBinding Background}" CornerRadius="2" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+                                                </Grid>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>

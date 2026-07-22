@@ -239,27 +239,27 @@ public class NothingProtocol : IDisposable
     }
 
     /// <summary>Get spatial audio status</summary>
-    public async Task<bool?> GetSpatialAudioAsync()
+    public async Task<SpatialAudioMode?> GetSpatialAudioAsync()
     {
         var response = await SendAndWaitAsync(
             _builder.BuildQuery(Commands.Query.GET_SPATIAL_AUDIO));
         if (response?.IsOk == true && response.Payload.Length >= 1)
         {
-            bool enabled = response.Payload[0] == 1;
-            Device.SpatialAudioEnabled = enabled;
-            return enabled;
+            var mode = (SpatialAudioMode)response.Payload[0];
+            Device.SpatialAudioMode = mode;
+            return mode;
         }
         return null;
     }
 
     /// <summary>Set spatial audio</summary>
-    public async Task<bool> SetSpatialAudioAsync(bool enabled)
+    public async Task<bool> SetSpatialAudioAsync(SpatialAudioMode mode)
     {
         var response = await SendAndWaitAsync(
-            _builder.BuildSetSpatialAudio(enabled));
+            _builder.BuildSetSpatialAudio(mode));
         if (response?.IsOk == true)
         {
-            Device.SpatialAudioEnabled = enabled;
+            Device.SpatialAudioMode = mode;
             return true;
         }
         return false;

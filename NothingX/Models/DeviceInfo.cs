@@ -16,7 +16,6 @@ public partial class DeviceInfo : ObservableObject
     [ObservableProperty] private AncMode _ancMode = AncMode.Off;
     [ObservableProperty] private EqPreset _eqPreset = EqPreset.Balanced;
     [ObservableProperty] private bool _lowLatencyMode;
-    [ObservableProperty] private bool _spatialAudio;
     [ObservableProperty] private bool _inEarLeft;
     [ObservableProperty] private bool _inEarRight;
     [ObservableProperty] private BatteryInfo _battery = new();
@@ -25,7 +24,7 @@ public partial class DeviceInfo : ObservableObject
     [ObservableProperty] private bool _isAdvancedEqMode;
     
     // New Audio Features
-    [ObservableProperty] private bool _spatialAudioEnabled;
+    [ObservableProperty] private SpatialAudioMode _spatialAudioMode;
     [ObservableProperty] private bool _ultraBassEnabled;
     [ObservableProperty] private int _ultraBassLevel;
     [ObservableProperty] private int _ancLevel;

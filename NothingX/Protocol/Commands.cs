@@ -102,7 +102,7 @@ public static class Commands
         public const int SET_ADVANCE_CUSTOM_EQ_VALUE = 0xF043;
         public const int SET_BASS_BOOST = 0xF031;
         public const int SET_HIGH_QUALITY_AUDIO = 0xF01C; // LDAC toggle (confirmed via btsnoop: payload 02=LDAC, 00=AAC)
-        public const int SET_SPATIAL_AUDIO = 0xF032;
+        public const int SET_SPATIAL_AUDIO = 0xF052;
         public const int SET_BASS_ENHANCER = 0xF051; // Bass Enhancer (confirmed via btsnoop: byte0=enable, byte1=level*5)
         public const int SET_BASS_ENHANCER_MODE = 0xF057;
         public const int SET_SMART_FREE_MODE = 0xF038;

@@ -49,6 +49,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private EqPreset _currentEqPreset = EqPreset.Balanced;
     [ObservableProperty] private bool _lowLatencyMode;
     [ObservableProperty] private bool _isFinding;
+    [ObservableProperty] private bool _isHeadphone;
     [ObservableProperty] private string _selectedDeviceView = "connect"; // "connect" or "device"
     [ObservableProperty] private DeviceListItem? _selectedDevice;
 
@@ -67,9 +68,36 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _isAdvancedEqMode;
     
     // Audio Enhancements
-    [ObservableProperty] private bool _spatialAudioEnabled;
+    [ObservableProperty] private SpatialAudioMode _spatialAudioMode;
+    public Array AvailableSpatialAudioModes => Enum.GetValues(typeof(SpatialAudioMode));
     [ObservableProperty] private bool _ultraBassEnabled;
     [ObservableProperty] private int _ultraBassLevel = 1;
+
+    public int BassEnhancerSliderValue
+    {
+        get => UltraBassEnabled ? (UltraBassLevel == 1 ? 5 : 10) : 0;
+        set
+        {
+            if (value == 0)
+            {
+                UltraBassEnabled = false;
+            }
+            else
+            {
+                UltraBassEnabled = true;
+                UltraBassLevel = (value <= 5) ? 1 : 2;
+            }
+            _ = ApplyUltraBassAsync();
+            OnPropertyChanged(nameof(BassEnhancerSliderValue));
+            OnPropertyChanged(nameof(BassEnhancerStateText));
+        }
+    }
+
+    public string BassEnhancerStateText
+    {
+        get => UltraBassEnabled ? $"On • Level {UltraBassLevel}" : "Off";
+    }
+
     [ObservableProperty] private int _ancLevel;
     [ObservableProperty] private bool _highQualityAudioEnabled;
     [ObservableProperty] private int _autoPowerOffTime;
@@ -136,13 +164,28 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
         BatteryRight = dev.Battery.Right;
         BatteryCase = dev.Battery.Case;
+        IsHeadphone = dev.Name.Contains("Headphone", StringComparison.OrdinalIgnoreCase) || 
+                      dev.Name.Contains("Neckband", StringComparison.OrdinalIgnoreCase);
+        
+        // Debug text requested to be hidden by user
+        // if (IsHeadphone)
+        // {
+        //     StatusText = $"Connected | Battery: {dev.Battery.Case}%";
+        // }
+        // else
+        // {
+        //     StatusText = $"Connected | Battery: L={dev.Battery.Left}% R={dev.Battery.Right}% C={dev.Battery.Case}%";
+        // }
+
         CurrentAncMode = dev.AncMode;
         CurrentEqPreset = dev.EqPreset;
         LowLatencyMode = dev.LowLatencyMode;
         IsAdvancedEqMode = dev.IsAdvancedEqMode;
-        SpatialAudioEnabled = dev.SpatialAudioEnabled;
+        SpatialAudioMode = dev.SpatialAudioMode;
         UltraBassEnabled = dev.UltraBassEnabled;
         UltraBassLevel = dev.UltraBassLevel;
+        OnPropertyChanged(nameof(BassEnhancerSliderValue));
+        OnPropertyChanged(nameof(BassEnhancerStateText));
         AncLevel = dev.AncLevel;
         HighQualityAudioEnabled = dev.HighQualityAudioEnabled;
         AutoPowerOffTime = dev.AutoPowerOffTime;
@@ -155,8 +198,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
             SimpleEqMid = (int)Math.Round(dev.SimpleEq.Bands[0].Gain);
             SimpleEqTreble = (int)Math.Round(dev.SimpleEq.Bands[1].Gain);
         }
-
-        StatusText = $"Connected | Battery: L={dev.Battery.Left}% R={dev.Battery.Right}% C={dev.Battery.Case}%";
 
         if (dev.AdvancedEq != null)
         {
@@ -243,6 +284,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private async Task SetSpatialAudioModeAsync(string modeStr)
+    {
+        if (Enum.TryParse<SpatialAudioMode>(modeStr, out var mode))
+        {
+            await _protocol.SetSpatialAudioAsync(mode);
+            SpatialAudioMode = mode;
+        }
+    }
+
+    [RelayCommand]
     private async Task SetEqPresetAsync(string presetStr)
     {
         if (Enum.TryParse<EqPreset>(presetStr, out var preset))
@@ -268,10 +319,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 
-    [RelayCommand]
-    private async Task ToggleSpatialAudioAsync()
+    partial void OnSpatialAudioModeChanged(SpatialAudioMode value)
     {
-        await _protocol.SetSpatialAudioAsync(SpatialAudioEnabled);
+        _ = _protocol.SetSpatialAudioAsync(value);
     }
 
     [RelayCommand]

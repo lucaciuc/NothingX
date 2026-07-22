@@ -1,3 +1,5 @@
+using NothingX.Models;
+
 namespace NothingX.Protocol;
 
 /// <summary>
@@ -98,8 +100,8 @@ public class PacketBuilder
         => Build(Commands.Set.SET_KEY_CONFIGURATION, payload);
 
     /// <summary>Build a set spatial audio packet</summary>
-    public NothingPacket BuildSetSpatialAudio(bool enabled)
-        => Build(Commands.Set.SET_SPATIAL_AUDIO, [enabled ? (byte)1 : (byte)0]);
+    public NothingPacket BuildSetSpatialAudio(SpatialAudioMode mode)
+        => Build(Commands.Set.SET_SPATIAL_AUDIO, [(byte)mode, 0x00]);
 
     /// <summary>Build a set bass enhancer packet</summary>
     public NothingPacket BuildSetBassEnhancer(bool enabled, byte level)

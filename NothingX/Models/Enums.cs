@@ -19,3 +19,11 @@ public enum EqPreset : byte
     DiracOpteo = 4,
     Custom = 5
 }
+
+/// <summary>Spatial audio modes</summary>
+public enum SpatialAudioMode : byte
+{
+    Off = 0,
+    Concert = 2,
+    Cinema = 3
+}
