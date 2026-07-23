@@ -654,7 +654,6 @@ public class NothingProtocol : IDisposable
         foreach (var packet in packets)
         {
             Log?.Invoke($"← {packet}");
-            try { System.IO.File.AppendAllText(@"C:\Users\Andrew\Desktop\packet_log.txt", $"{DateTime.Now:HH:mm:ss.fff} | CMD: {packet.Command:X4} | {packet}\n"); } catch {}
             HandleReceivedPacket(packet);
         }
     }

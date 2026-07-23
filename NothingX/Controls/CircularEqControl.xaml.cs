@@ -7,6 +7,8 @@ using System.Windows.Shapes;
 
 namespace NothingX.Controls;
 
+public enum EqBandType { Mid, Bass, Treble }
+
 public partial class CircularEqControl : UserControl
 {
     public static readonly DependencyProperty BassValueProperty =
@@ -84,9 +86,9 @@ public partial class CircularEqControl : UserControl
         AxesCanvas.Children.Add(zeroCircle);
 
         // Draw the 3 axes
-        DrawAxis(cx, cy, maxRadius, -Math.PI / 2); // Mid
-        DrawAxis(cx, cy, maxRadius, 150 * Math.PI / 180); // Bass
-        DrawAxis(cx, cy, maxRadius, 30 * Math.PI / 180); // Treble
+        DrawAxis(cx, cy, maxRadius, MidAngle);
+        DrawAxis(cx, cy, maxRadius, BassAngle);
+        DrawAxis(cx, cy, maxRadius, TrebleAngle);
     }
 
     private void DrawAxis(double cx, double cy, double length, double angleRads)
@@ -104,12 +106,26 @@ public partial class CircularEqControl : UserControl
         AxesCanvas.Children.Add(line);
     }
 
+    private const double MidAngle = -Math.PI / 2;
+    private const double BassAngle = 150 * Math.PI / 180;
+    private const double TrebleAngle = 30 * Math.PI / 180;
+
+    private double GetRadiusForValue(double maxRadius, double value)
+    {
+        double normalizedValue = (value + 6.0) / 12.0;
+        return maxRadius * (0.1 + normalizedValue * 0.9);
+    }
+
+    private float GetValueFromRadius(double maxRadius, double radius)
+    {
+        double normalizedValue = (radius / maxRadius - 0.1) / 0.9;
+        normalizedValue = Math.Max(0, Math.Min(1, normalizedValue));
+        return (float)Math.Round(-6.0 + (normalizedValue * 12.0));
+    }
+
     private Point GetPointForValue(double cx, double cy, double maxRadius, double value, double angleRads)
     {
-        // value is -6 to +6. 
-        // We map -6 to 10% radius, 0 to 50% radius, +6 to 100% radius.
-        double normalizedValue = (value + 6.0) / 12.0; // 0.0 to 1.0
-        double radius = maxRadius * (0.1 + normalizedValue * 0.9);
+        double radius = GetRadiusForValue(maxRadius, value);
         
         return new Point(
             cx + Math.Cos(angleRads) * radius,
@@ -130,13 +146,9 @@ public partial class CircularEqControl : UserControl
         double maxRadius = Math.Min(cx, cy) - 20;
         if (maxRadius <= 0) return;
 
-        double midAngle = -Math.PI / 2;
-        double bassAngle = 150 * Math.PI / 180;
-        double trebleAngle = 30 * Math.PI / 180;
-
-        Point pMid = GetPointForValue(cx, cy, maxRadius, MidValue, midAngle);
-        Point pBass = GetPointForValue(cx, cy, maxRadius, BassValue, bassAngle);
-        Point pTreble = GetPointForValue(cx, cy, maxRadius, TrebleValue, trebleAngle);
+        Point pMid = GetPointForValue(cx, cy, maxRadius, MidValue, MidAngle);
+        Point pBass = GetPointForValue(cx, cy, maxRadius, BassValue, BassAngle);
+        Point pTreble = GetPointForValue(cx, cy, maxRadius, TrebleValue, TrebleAngle);
 
         // Update Thumbs
         Canvas.SetLeft(MidThumb, pMid.X);
@@ -149,15 +161,15 @@ public partial class CircularEqControl : UserControl
         Canvas.SetTop(TrebleThumb, pTreble.Y);
 
         // Update Labels (positioned at the outer edge)
-        Point lMid = GetPointForValue(cx, cy, maxRadius + 15, 6, midAngle);
+        Point lMid = GetPointForValue(cx, cy, maxRadius + 15, 6, MidAngle);
         Canvas.SetLeft(MidLabel, lMid.X - 10);
         Canvas.SetTop(MidLabel, lMid.Y - 15);
 
-        Point lBass = GetPointForValue(cx, cy, maxRadius + 15, 6, bassAngle);
+        Point lBass = GetPointForValue(cx, cy, maxRadius + 15, 6, BassAngle);
         Canvas.SetLeft(BassLabel, lBass.X - 25);
         Canvas.SetTop(BassLabel, lBass.Y - 5);
 
-        Point lTreble = GetPointForValue(cx, cy, maxRadius + 15, 6, trebleAngle);
+        Point lTreble = GetPointForValue(cx, cy, maxRadius + 15, 6, TrebleAngle);
         Canvas.SetLeft(TrebleLabel, lTreble.X + 5);
         Canvas.SetTop(TrebleLabel, lTreble.Y - 5);
 
@@ -195,19 +207,23 @@ public partial class CircularEqControl : UserControl
         // Distance from center
         double dist = Math.Sqrt(Math.Pow(currentX - cx, 2) + Math.Pow(currentY - cy, 2));
 
-        // Map distance back to value: radius = maxRadius * (0.1 + normalizedValue * 0.9)
-        // normalizedValue = (radius / maxRadius - 0.1) / 0.9
-        double normalizedValue = (dist / maxRadius - 0.1) / 0.9;
-        
-        // Clamp
-        normalizedValue = Math.Max(0, Math.Min(1, normalizedValue));
-        
-        // Map to -6 to +6
-        float val = (float)Math.Round(-6.0 + (normalizedValue * 12.0));
+        float val = GetValueFromRadius(maxRadius, dist);
 
-        if (thumb.Tag?.ToString() == "Mid" && MidValue != val) MidValue = val;
-        else if (thumb.Tag?.ToString() == "Bass" && BassValue != val) BassValue = val;
-        else if (thumb.Tag?.ToString() == "Treble" && TrebleValue != val) TrebleValue = val;
+        if (Enum.TryParse<EqBandType>(thumb.Tag?.ToString(), out var bandType))
+        {
+            switch (bandType)
+            {
+                case EqBandType.Mid:
+                    if (MidValue != val) MidValue = val;
+                    break;
+                case EqBandType.Bass:
+                    if (BassValue != val) BassValue = val;
+                    break;
+                case EqBandType.Treble:
+                    if (TrebleValue != val) TrebleValue = val;
+                    break;
+            }
+        }
 
         UpdateUI();
         _isDragging = false;

@@ -9,6 +9,8 @@ using NothingX.ViewModels;
 
 namespace NothingX.ViewModels;
 
+public enum DeviceView { Connect, Device, Controls, Settings }
+
 public partial class EqBandViewModel : ObservableObject
 {
     private readonly Action? _onChanged;
@@ -53,20 +55,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private readonly NothingProtocol _protocol = new();
 
-    [ObservableProperty] private bool _isConnected;
+    public DeviceInfo Device => _protocol.Device;
+
     [ObservableProperty] private bool _isConnecting;
     [ObservableProperty] private string _statusText = "Disconnected";
-    [ObservableProperty] private string _deviceName = "Nothing Ear";
-    [ObservableProperty] private string _firmwareVersion = "";
-    [ObservableProperty] private int _batteryLeft;
-    [ObservableProperty] private int _batteryRight;
-    [ObservableProperty] private int _batteryCase;
-    [ObservableProperty] private AncMode _currentAncMode = AncMode.Off;
-    [ObservableProperty] private EqPreset _currentEqPreset = EqPreset.Balanced;
-    [ObservableProperty] private bool _lowLatencyMode;
     [ObservableProperty] private bool _isFinding;
     [ObservableProperty] private bool _isHeadphone;
-    [ObservableProperty] private string _selectedDeviceView = "connect"; // "connect" or "device"
+    [ObservableProperty] private DeviceView _selectedDeviceView = DeviceView.Connect;
     [ObservableProperty] private DeviceListItem? _selectedDevice;
 
     public ObservableCollection<DeviceListItem> DiscoveredDevices { get; } = [];
@@ -81,27 +76,22 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private float _simpleEqMid;
     [ObservableProperty] private float _simpleEqTreble;
     
-    [ObservableProperty] private bool _isAdvancedEqMode;
-    
     // Audio Enhancements
-    [ObservableProperty] private SpatialAudioMode _spatialAudioMode;
     public Array AvailableSpatialAudioModes => Enum.GetValues(typeof(SpatialAudioMode));
-    [ObservableProperty] private bool _ultraBassEnabled;
-    [ObservableProperty] private int _ultraBassLevel = 1;
 
     public int BassEnhancerSliderValue
     {
-        get => UltraBassEnabled ? (UltraBassLevel == 1 ? 5 : 10) : 0;
+        get => Device.UltraBassEnabled ? (Device.UltraBassLevel == 1 ? 5 : 10) : 0;
         set
         {
             if (value == 0)
             {
-                UltraBassEnabled = false;
+                Device.UltraBassEnabled = false;
             }
             else
             {
-                UltraBassEnabled = true;
-                UltraBassLevel = (value <= 5) ? 1 : 2;
+                Device.UltraBassEnabled = true;
+                Device.UltraBassLevel = (value <= 5) ? 1 : 2;
             }
             _ = ApplyUltraBassAsync();
             OnPropertyChanged(nameof(BassEnhancerSliderValue));
@@ -111,13 +101,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     public string BassEnhancerStateText
     {
-        get => UltraBassEnabled ? $"On • Level {UltraBassLevel}" : "Off";
+        get => Device.UltraBassEnabled ? $"On • Level {Device.UltraBassLevel}" : "Off";
     }
 
-    [ObservableProperty] private int _ancLevel;
-    [ObservableProperty] private bool _highQualityAudioEnabled;
-    [ObservableProperty] private int _autoPowerOffTime;
-    [ObservableProperty] private bool _dualConnectionEnabled;
     public System.Collections.ObjectModel.ObservableCollection<DualDevice> DualDevices => _protocol.Device.DualDevices;
     
     [ObservableProperty] private GestureAction _leftDoubleTap;
@@ -168,46 +154,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void SyncFromDevice()
     {
         var dev = _protocol.Device;
-        IsConnected = dev.IsConnected;
-        DeviceName = dev.Name;
-        FirmwareVersion = dev.FirmwareVersion;
-        if (dev.Name.Contains("Headphone", StringComparison.OrdinalIgnoreCase) || 
-            dev.Name.Contains("Neckband", StringComparison.OrdinalIgnoreCase))
-        {
-            BatteryLeft = dev.Battery.Case;
-        }
-        else
-        {
-            BatteryLeft = dev.Battery.Left;
-        }
-        BatteryRight = dev.Battery.Right;
-        BatteryCase = dev.Battery.Case;
         IsHeadphone = dev.Name.Contains("Headphone", StringComparison.OrdinalIgnoreCase) || 
                       dev.Name.Contains("Neckband", StringComparison.OrdinalIgnoreCase);
         
-        // Debug text requested to be hidden by user
-        // if (IsHeadphone)
-        // {
-        //     StatusText = $"Connected | Battery: {dev.Battery.Case}%";
-        // }
-        // else
-        // {
-        //     StatusText = $"Connected | Battery: L={dev.Battery.Left}% R={dev.Battery.Right}% C={dev.Battery.Case}%";
-        // }
-
-        CurrentAncMode = dev.AncMode;
-        CurrentEqPreset = dev.EqPreset;
-        LowLatencyMode = dev.LowLatencyMode;
-        IsAdvancedEqMode = dev.IsAdvancedEqMode;
-        SpatialAudioMode = dev.SpatialAudioMode;
-        UltraBassEnabled = dev.UltraBassEnabled;
-        UltraBassLevel = dev.UltraBassLevel;
         OnPropertyChanged(nameof(BassEnhancerSliderValue));
         OnPropertyChanged(nameof(BassEnhancerStateText));
-        AncLevel = dev.AncLevel;
-        HighQualityAudioEnabled = dev.HighQualityAudioEnabled;
-        AutoPowerOffTime = dev.AutoPowerOffTime;
-        DualConnectionEnabled = dev.DualConnectionEnabled;
 
         if (dev.SimpleEq != null)
         {
@@ -232,7 +183,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (!dev.IsConnected)
         {
             StatusText = "Disconnected";
-            SelectedDeviceView = "connect";
+            SelectedDeviceView = DeviceView.Connect;
         }
     }
 
@@ -271,9 +222,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             _protocol.Device.Name = device.Name;
             await _protocol.ConnectAsync(device.BluetoothAddress);
-            DeviceName = device.Name;
             StatusText = "Connected";
-            SelectedDeviceView = "device";
+            SelectedDeviceView = DeviceView.Device;
         }
         catch (Exception ex)
         {
@@ -290,7 +240,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         _protocol.Disconnect();
         StatusText = "Disconnected";
-        SelectedDeviceView = "connect";
+        SelectedDeviceView = DeviceView.Connect;
     }
 
     [RelayCommand]
@@ -308,7 +258,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (Enum.TryParse<SpatialAudioMode>(modeStr, out var mode))
         {
             await _protocol.SetSpatialAudioAsync(mode);
-            SpatialAudioMode = mode;
+            Device.SpatialAudioMode = mode;
         }
     }
 
@@ -324,7 +274,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task ToggleLowLatencyAsync()
     {
-        await _protocol.SetLowLatencyAsync(LowLatencyMode);
+        await _protocol.SetLowLatencyAsync(Device.LowLatencyMode);
     }
 
     [RelayCommand]
@@ -332,33 +282,26 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         if (bool.TryParse(isAdvancedStr, out bool isAdvanced))
         {
-            // Just toggle the local UI state.
-            // The actual protocol command is sent when APPLY is clicked.
-            IsAdvancedEqMode = isAdvanced;
+            Device.IsAdvancedEqMode = isAdvanced;
         }
-    }
-
-    partial void OnSpatialAudioModeChanged(SpatialAudioMode value)
-    {
-        _ = _protocol.SetSpatialAudioAsync(value);
     }
 
     [RelayCommand]
     private async Task ToggleHighQualityAudioAsync()
     {
-        await _protocol.SetSystemAudioAsync(HighQualityAudioEnabled);
+        await _protocol.SetSystemAudioAsync(Device.HighQualityAudioEnabled);
     }
 
     [RelayCommand]
     private async Task ApplyAutoPowerOffAsync()
     {
-        await _protocol.SetAutoPowerOffAsync(AutoPowerOffTime);
+        await _protocol.SetAutoPowerOffAsync(Device.AutoPowerOffTime);
     }
 
     [RelayCommand]
     private async Task ToggleDualConnectionAsync()
     {
-        await _protocol.SetDualConnectionAsync(DualConnectionEnabled);
+        await _protocol.SetDualConnectionAsync(Device.DualConnectionEnabled);
     }
 
     [RelayCommand]
@@ -377,9 +320,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task ApplyUltraBassAsync()
     {
-        if (IsConnected)
+        if (Device.IsConnected)
         {
-            await _protocol.SetBassEnhancerAsync(UltraBassEnabled, UltraBassLevel);
+            await _protocol.SetBassEnhancerAsync(Device.UltraBassEnabled, Device.UltraBassLevel);
         }
     }
 
@@ -402,7 +345,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task ApplyCustomEqAsync()
     {
-        if (!IsConnected) return;
+        if (!Device.IsConnected) return;
         
         for (int i = 0; i < 8; i++)
         {
@@ -414,7 +357,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task ApplySimpleEqAsync()
     {
-        if (!IsConnected) return;
+        if (!Device.IsConnected) return;
         
         // Band mapping: Band 0 = Mid, Band 1 = Treble, Band 2 = Bass
         _simpleEqModel.Bands[2].Gain = SimpleEqBass;
@@ -427,7 +370,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task SyncGesturesAsync()
     {
-        if (!IsConnected) return;
+        if (!Device.IsConnected) return;
         
         // Sync Left Earbud (Device = 0)
         await _protocol.SetGestureAsync(new GestureConfig { Device = 0, Gesture = GestureType.DoubleTap, Action = LeftDoubleTap });
@@ -456,7 +399,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task RefreshAsync()
     {
-        if (IsConnected)
+        if (Device.IsConnected)
         {
             await _protocol.RefreshStateAsync();
         }
@@ -465,19 +408,19 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void ShowControls()
     {
-        SelectedDeviceView = "controls";
+        SelectedDeviceView = DeviceView.Controls;
     }
 
     [RelayCommand]
     private void ShowSettings()
     {
-        SelectedDeviceView = "settings";
+        SelectedDeviceView = DeviceView.Settings;
     }
 
     [RelayCommand]
     private void GoBackToDevice()
     {
-        SelectedDeviceView = "device";
+        SelectedDeviceView = DeviceView.Device;
     }
 
     public void Dispose()

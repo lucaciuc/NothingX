@@ -53,7 +53,6 @@ public static class Commands
         public const int GET_REGISTERED_NOTIFICATION = 0xC03E;
         public const int GET_HOST_UTC_TIME = 0xC03F;
         public const int GET_HOST_LAG_MODE = 0xC041;
-        public const int GET_HOST_VERSION_DEVICE = 0xC042;
         public const int GET_ADAPTIVE_EQ_MODE = 0xC043;
         public const int GET_SIMPLE_CUSTOM_EQ = 0xC044; // Was GET_CUSTOM_EQ_VALUE
         public const int GET_ADVANCE_CUSTOM_EQ_MODE = 0xC042;
@@ -111,7 +110,6 @@ public static class Commands
         public const int SET_SMART_ANC_MODE = 0xF039;
         public const int SET_LE_SWITCH_MODEL = 0xF03A;
         public const int SET_SYSTEM_AUDIO = 0xF03B;
-        public const int SET_ESSENTIAL_SPACE_STATUS = 0xF042;
         public const int SET_DETAIL_ENHANCEMENT = 0xF049;
         public const int SET_SCENARIO_MODE = 0xF055;
         public const int OTA_FIND_NEW_VERSION = 0xF024;

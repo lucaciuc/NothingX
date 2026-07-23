@@ -35,21 +35,7 @@ public class SimpleEq
         int offset = 5;
         for (int i = 0; i < size; i++)
         {
-            var band = Bands[i];
-            payload[offset] = band.FilterType;
-            offset += 1;
-
-            var bGain = BitConverter.GetBytes(Math.Clamp(band.Gain, -6f, 6f));
-            Array.Copy(bGain, 0, payload, offset, 4);
-            offset += 4;
-
-            var bFreq = BitConverter.GetBytes(band.Frequency);
-            Array.Copy(bFreq, 0, payload, offset, 4);
-            offset += 4;
-
-            var bQual = BitConverter.GetBytes(band.Quality);
-            Array.Copy(bQual, 0, payload, offset, 4);
-            offset += 4;
+            Bands[i].WriteToPayload(payload, ref offset);
         }
 
         return payload;
@@ -67,15 +53,7 @@ public class SimpleEq
             for (int i = 0; i < Math.Min(size, 3); i++)
             {
                 if (offset + 13 > payload.Length) break;
-
-                eq.Bands[i].FilterType = payload[offset];
-                offset += 1;
-                eq.Bands[i].Gain = BitConverter.ToSingle(payload, offset);
-                offset += 4;
-                eq.Bands[i].Frequency = BitConverter.ToSingle(payload, offset);
-                offset += 4;
-                eq.Bands[i].Quality = BitConverter.ToSingle(payload, offset);
-                offset += 4;
+                eq.Bands[i].ReadFromPayload(payload, ref offset);
             }
         }
         return eq;

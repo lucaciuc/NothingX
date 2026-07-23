@@ -48,13 +48,6 @@ public class PacketBuilder
     public NothingPacket BuildQuery(int queryCommand)
         => Build(queryCommand);
 
-    /// <summary>Build a set packet with a single byte payload</summary>
-    public NothingPacket BuildSet(int setCommand, byte value)
-        => Build(setCommand, [value]);
-
-    /// <summary>Build a set packet with a byte array payload</summary>
-    public NothingPacket BuildSet(int setCommand, byte[] payload)
-        => Build(setCommand, payload);
 
     /// <summary>Build the protocol activation packet (required after connect)</summary>
     public NothingPacket BuildActivate()
@@ -103,17 +96,11 @@ public class PacketBuilder
     public NothingPacket BuildSetSpatialAudio(SpatialAudioMode mode)
         => Build(Commands.Set.SET_SPATIAL_AUDIO, [(byte)mode, 0x00]);
 
-    /// <summary>Build a set bass enhancer packet</summary>
-    public NothingPacket BuildSetBassEnhancer(bool enabled, byte level)
-        => Build(Commands.Set.SET_BASS_ENHANCER_MODE, [enabled ? (byte)1 : (byte)0, level]);
 
     /// <summary>Build a set ANC level packet</summary>
     public NothingPacket BuildSetAncLevel(byte level)
         => Build(Commands.Set.SET_NOISE_REDUCTION_CONFIGURATION, [level]);
 
-    /// <summary>Build a set system audio (High-Quality/LDAC) packet</summary>
-    public NothingPacket BuildSetSystemAudio(bool enabled)
-        => Build(Commands.Set.SET_SYSTEM_AUDIO, [enabled ? (byte)1 : (byte)0]);
 
     /// <summary>Build a set auto power off time packet</summary>
     public NothingPacket BuildSetAutoPowerOff(byte minutes)

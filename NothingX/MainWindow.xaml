@@ -50,7 +50,7 @@
             <Grid Grid.Row="1">
                 
                 <!-- CONNECT VIEW -->
-                <Grid Visibility="{Binding SelectedDeviceView, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=connect}">
+                <Grid Visibility="{Binding SelectedDeviceView, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Connect}">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="300">
                         <TextBlock Text="Connect Device" Style="{StaticResource DeviceTitleText}"/>
                         <TextBlock Text="Ensure your earbuds are paired in Windows Bluetooth settings." TextWrapping="Wrap" Style="{StaticResource SubHeadingText}" TextAlignment="Center" Margin="0,0,0,30"/>
@@ -77,11 +77,11 @@
                 </Grid>
 
                 <!-- DEVICE VIEW -->
-                <Grid Visibility="{Binding SelectedDeviceView, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=device}">
+                <Grid Visibility="{Binding SelectedDeviceView, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Device}">
                     <ScrollViewer VerticalScrollBarVisibility="Hidden" Margin="0,0,0,20">
                         <StackPanel>
                             <!-- Header: Image and Title -->
-                            <TextBlock Text="{Binding DeviceName}" Style="{StaticResource DeviceTitleText}"/>
+                            <TextBlock Text="{Binding Device.Name}" Style="{StaticResource DeviceTitleText}"/>
                             
                             <!-- Battery Row -->
                             <Grid HorizontalAlignment="Center" Margin="0,5,0,20">
@@ -98,7 +98,7 @@
                                         </Style>
                                     </StackPanel.Style>
                                     <TextBlock Text="⚡" Foreground="LightGreen" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding BatteryCase, StringFormat='{}{0}%'}" Foreground="{StaticResource BrushLightGray}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Device.Battery.Case, StringFormat='{}{0}%'}" Foreground="{StaticResource BrushLightGray}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
 
                                 <!-- Earbuds (L, R, Case) -->
@@ -115,13 +115,13 @@
                                     </StackPanel.Style>
                                     
                                     <TextBlock Text="L" Foreground="{StaticResource BrushWhite}" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding BatteryLeft, StringFormat='{}{0}%'}" Foreground="{StaticResource BrushLightGray}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                                    <TextBlock Text="{Binding Device.Battery.Left, StringFormat='{}{0}%'}" Foreground="{StaticResource BrushLightGray}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0"/>
                                     
                                     <TextBlock Text="R" Foreground="{StaticResource BrushWhite}" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding BatteryRight, StringFormat='{}{0}%'}" Foreground="{StaticResource BrushLightGray}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                                    <TextBlock Text="{Binding Device.Battery.Right, StringFormat='{}{0}%'}" Foreground="{StaticResource BrushLightGray}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0"/>
 
                                     <TextBlock Text="Case" Foreground="{StaticResource BrushWhite}" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding BatteryCase, StringFormat='{}{0}%'}" Foreground="{StaticResource BrushLightGray}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Device.Battery.Case, StringFormat='{}{0}%'}" Foreground="{StaticResource BrushLightGray}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Grid>
 
@@ -138,19 +138,19 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <RadioButton Grid.Column="0" Content="On" Tag="○" Command="{Binding SetAncModeCommand}" CommandParameter="NoiseCancellation" Style="{StaticResource AncToggleButton}" IsChecked="{Binding CurrentAncMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=NoiseCancellation, Mode=OneWay}"/>
-                                        <RadioButton Grid.Column="1" Content="Transparency" Tag="⋮" Command="{Binding SetAncModeCommand}" CommandParameter="Transparency" Style="{StaticResource AncToggleButton}" IsChecked="{Binding CurrentAncMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Transparency, Mode=OneWay}"/>
-                                        <RadioButton Grid.Column="2" Content="Off" Tag="⊘" Command="{Binding SetAncModeCommand}" CommandParameter="Off" Style="{StaticResource AncToggleButton}" IsChecked="{Binding CurrentAncMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Off, Mode=OneWay}"/>
+                                        <RadioButton Grid.Column="0" Content="On" Tag="○" Command="{Binding SetAncModeCommand}" CommandParameter="NoiseCancellation" Style="{StaticResource AncToggleButton}" IsChecked="{Binding Device.AncMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=NoiseCancellation, Mode=OneWay}"/>
+                                        <RadioButton Grid.Column="1" Content="Transparency" Tag="⋮" Command="{Binding SetAncModeCommand}" CommandParameter="Transparency" Style="{StaticResource AncToggleButton}" IsChecked="{Binding Device.AncMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Transparency, Mode=OneWay}"/>
+                                        <RadioButton Grid.Column="2" Content="Off" Tag="⊘" Command="{Binding SetAncModeCommand}" CommandParameter="Off" Style="{StaticResource AncToggleButton}" IsChecked="{Binding Device.AncMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Off, Mode=OneWay}"/>
                                     </Grid>
                                     
                                     <!-- ANC Level Selector (Only visible when ANC is On) -->
-                                    <StackPanel Margin="20,10,20,0" Visibility="{Binding CurrentAncMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=NoiseCancellation}">
+                                    <StackPanel Margin="20,10,20,0" Visibility="{Binding Device.AncMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=NoiseCancellation}">
                                         <TextBlock Text="Level" Foreground="{StaticResource BrushWhite}" FontSize="12" Margin="0,0,0,5"/>
                                         <UniformGrid Columns="4" Height="40">
-                                            <RadioButton Content="High" Style="{StaticResource EqTabButton}" Command="{Binding ApplyAncLevelCommand}" CommandParameter="1" IsChecked="{Binding AncLevel, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=1, Mode=OneWay}"/>
-                                            <RadioButton Content="Mid" Style="{StaticResource EqTabButton}" Command="{Binding ApplyAncLevelCommand}" CommandParameter="2" IsChecked="{Binding AncLevel, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=2, Mode=OneWay}" Margin="5,0,0,0"/>
-                                            <RadioButton Content="Low" Style="{StaticResource EqTabButton}" Command="{Binding ApplyAncLevelCommand}" CommandParameter="3" IsChecked="{Binding AncLevel, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=3, Mode=OneWay}" Margin="5,0,0,0"/>
-                                            <RadioButton Content="Adaptive" Style="{StaticResource EqTabButton}" Command="{Binding ApplyAncLevelCommand}" CommandParameter="5" IsChecked="{Binding AncLevel, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=5, Mode=OneWay}" Margin="5,0,0,0"/>
+                                            <RadioButton Content="High" Style="{StaticResource EqTabButton}" Command="{Binding ApplyAncLevelCommand}" CommandParameter="1" IsChecked="{Binding Device.AncLevel, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=1, Mode=OneWay}"/>
+                                            <RadioButton Content="Mid" Style="{StaticResource EqTabButton}" Command="{Binding ApplyAncLevelCommand}" CommandParameter="2" IsChecked="{Binding Device.AncLevel, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=2, Mode=OneWay}" Margin="5,0,0,0"/>
+                                            <RadioButton Content="Low" Style="{StaticResource EqTabButton}" Command="{Binding ApplyAncLevelCommand}" CommandParameter="3" IsChecked="{Binding Device.AncLevel, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=3, Mode=OneWay}" Margin="5,0,0,0"/>
+                                            <RadioButton Content="Adaptive" Style="{StaticResource EqTabButton}" Command="{Binding ApplyAncLevelCommand}" CommandParameter="5" IsChecked="{Binding Device.AncLevel, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=5, Mode=OneWay}" Margin="5,0,0,0"/>
                                         </UniformGrid>
                                     </StackPanel>
 
@@ -170,20 +170,20 @@
                                         
                                         <!-- Tabs -->
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
-                                            <RadioButton Content="SIMPLE" Style="{StaticResource EqTabButton}" IsChecked="{Binding IsAdvancedEqMode, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" Command="{Binding ToggleAdvancedEqCommand}" CommandParameter="False"/>
-                                            <RadioButton Content="ADVANCED" Style="{StaticResource EqTabButton}" Margin="10,0,0,0" IsChecked="{Binding IsAdvancedEqMode, Mode=OneWay}" Command="{Binding ToggleAdvancedEqCommand}" CommandParameter="True"/>
+                                            <RadioButton Content="SIMPLE" Style="{StaticResource EqTabButton}" IsChecked="{Binding Device.IsAdvancedEqMode, Mode=OneWay, Converter={StaticResource InverseBooleanConverter}}" Command="{Binding ToggleAdvancedEqCommand}" CommandParameter="False"/>
+                                            <RadioButton Content="ADVANCED" Style="{StaticResource EqTabButton}" Margin="10,0,0,0" IsChecked="{Binding Device.IsAdvancedEqMode, Mode=OneWay}" Command="{Binding ToggleAdvancedEqCommand}" CommandParameter="True"/>
                                         </StackPanel>
                                     </Grid>
                                     
                                     <!-- Simple EQ View -->
-                                    <Grid Visibility="{Binding IsAdvancedEqMode, Converter={StaticResource InverseBooleanConverter}}">
+                                    <Grid Visibility="{Binding Device.IsAdvancedEqMode, Converter={StaticResource InverseBooleanConverter}}">
                                         <StackPanel>
                                             <!-- Presets -->
                                             <UniformGrid Rows="2" Columns="2" Margin="15,0,15,20">
-                                                <RadioButton Content="BALANCED" Command="{Binding SetEqPresetCommand}" CommandParameter="Balanced" Style="{StaticResource EqPresetButton}" IsChecked="{Binding CurrentEqPreset, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Balanced, Mode=OneWay}"/>
-                                                <RadioButton Content="MORE BASS" Command="{Binding SetEqPresetCommand}" CommandParameter="MoreBass" Style="{StaticResource EqPresetButton}" IsChecked="{Binding CurrentEqPreset, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MoreBass, Mode=OneWay}"/>
-                                                <RadioButton Content="MORE TREBLE" Command="{Binding SetEqPresetCommand}" CommandParameter="MoreTreble" Style="{StaticResource EqPresetButton}" IsChecked="{Binding CurrentEqPreset, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MoreTreble, Mode=OneWay}"/>
-                                                <RadioButton Content="VOICE" Command="{Binding SetEqPresetCommand}" CommandParameter="Voice" Style="{StaticResource EqPresetButton}" IsChecked="{Binding CurrentEqPreset, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Voice, Mode=OneWay}"/>
+                                                <RadioButton Content="BALANCED" Command="{Binding SetEqPresetCommand}" CommandParameter="Balanced" Style="{StaticResource EqPresetButton}" IsChecked="{Binding Device.EqPreset, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Balanced, Mode=OneWay}"/>
+                                                <RadioButton Content="MORE BASS" Command="{Binding SetEqPresetCommand}" CommandParameter="MoreBass" Style="{StaticResource EqPresetButton}" IsChecked="{Binding Device.EqPreset, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MoreBass, Mode=OneWay}"/>
+                                                <RadioButton Content="MORE TREBLE" Command="{Binding SetEqPresetCommand}" CommandParameter="MoreTreble" Style="{StaticResource EqPresetButton}" IsChecked="{Binding Device.EqPreset, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MoreTreble, Mode=OneWay}"/>
+                                                <RadioButton Content="VOICE" Command="{Binding SetEqPresetCommand}" CommandParameter="Voice" Style="{StaticResource EqPresetButton}" IsChecked="{Binding Device.EqPreset, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Voice, Mode=OneWay}"/>
                                             </UniformGrid>
 
                                             <!-- Simple Custom 3-Band EQ -->
@@ -197,7 +197,7 @@
                                     </Grid>
 
                                     <!-- Advanced 8-Band EQ View -->
-                                    <Grid Visibility="{Binding IsAdvancedEqMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Grid Visibility="{Binding Device.IsAdvancedEqMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                                         <StackPanel>
                                             <ItemsControl ItemsSource="{Binding CustomEqBands}" Margin="15,0,15,10">
                                                 <ItemsControl.ItemsPanel>
@@ -243,9 +243,9 @@
                                                     <ColumnDefinition Width="*"/>
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
-                                                <RadioButton Grid.Column="0" GroupName="SpatialAudioModes" Content="Concert mode" Tag="☵" Command="{Binding SetSpatialAudioModeCommand}" CommandParameter="Concert" Style="{StaticResource AncToggleButton}" IsChecked="{Binding SpatialAudioMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Concert, Mode=OneWay}"/>
-                                                <RadioButton Grid.Column="1" GroupName="SpatialAudioModes" Content="Cinema mode" Tag="☶" Command="{Binding SetSpatialAudioModeCommand}" CommandParameter="Cinema" Style="{StaticResource AncToggleButton}" IsChecked="{Binding SpatialAudioMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Cinema, Mode=OneWay}"/>
-                                                <RadioButton Grid.Column="2" GroupName="SpatialAudioModes" Content="Off" Tag="(○)" Command="{Binding SetSpatialAudioModeCommand}" CommandParameter="Off" Style="{StaticResource AncToggleButton}" IsChecked="{Binding SpatialAudioMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Off, Mode=OneWay}"/>
+                                                <RadioButton Grid.Column="0" GroupName="SpatialAudioModes" Content="Concert mode" Tag="☵" Command="{Binding SetSpatialAudioModeCommand}" CommandParameter="Concert" Style="{StaticResource AncToggleButton}" IsChecked="{Binding Device.SpatialAudioMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Concert, Mode=OneWay}"/>
+                                                <RadioButton Grid.Column="1" GroupName="SpatialAudioModes" Content="Cinema mode" Tag="☶" Command="{Binding SetSpatialAudioModeCommand}" CommandParameter="Cinema" Style="{StaticResource AncToggleButton}" IsChecked="{Binding Device.SpatialAudioMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Cinema, Mode=OneWay}"/>
+                                                <RadioButton Grid.Column="2" GroupName="SpatialAudioModes" Content="Off" Tag="(○)" Command="{Binding SetSpatialAudioModeCommand}" CommandParameter="Off" Style="{StaticResource AncToggleButton}" IsChecked="{Binding Device.SpatialAudioMode, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Off, Mode=OneWay}"/>
                                             </Grid>
                                         </StackPanel>
 
@@ -345,7 +345,7 @@
                                                 <TextBlock Text="High-Quality Audio" Foreground="{StaticResource BrushWhite}" FontSize="16" FontWeight="SemiBold"/>
                                                 <TextBlock Text="Enable LDAC for high-res sound" Foreground="{StaticResource BrushLightGray}" FontSize="12" Margin="0,5,0,0"/>
                                             </StackPanel>
-                                            <ToggleButton Grid.Column="1" Style="{StaticResource CustomToggleSwitchStyle}" IsChecked="{Binding HighQualityAudioEnabled}" Command="{Binding ToggleHighQualityAudioCommand}" VerticalAlignment="Center"/>
+                                            <ToggleButton Grid.Column="1" Style="{StaticResource CustomToggleSwitchStyle}" IsChecked="{Binding Device.HighQualityAudioEnabled}" Command="{Binding ToggleHighQualityAudioCommand}" VerticalAlignment="Center"/>
                                         </Grid>
                                     </StackPanel>
                                     
@@ -453,7 +453,7 @@
                 </Grid>
 
                 <!-- CONTROLS VIEW -->
-                <Grid Visibility="{Binding SelectedDeviceView, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=controls}">
+                <Grid Visibility="{Binding SelectedDeviceView, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Controls}">
                     <StackPanel>
                         <!-- Header with Back Button -->
                         <Grid Margin="15,10">
@@ -506,7 +506,7 @@
                 </Grid>
 
                 <!-- SETTINGS VIEW -->
-                <Grid Visibility="{Binding SelectedDeviceView, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=settings}">
+                <Grid Visibility="{Binding SelectedDeviceView, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Settings}">
                     <StackPanel>
                         <Grid Margin="15,10">
                             <Button Content="← Back" HorizontalAlignment="Left" Background="Transparent" Foreground="{StaticResource BrushWhite}" Command="{Binding GoBackToDeviceCommand}"/>
@@ -517,12 +517,12 @@
                             <StackPanel Margin="20">
                                 <Grid Margin="0,0,0,20">
                                     <TextBlock Text="Firmware Version" Foreground="{StaticResource BrushWhite}" FontWeight="SemiBold"/>
-                                    <TextBlock Text="{Binding FirmwareVersion}" Foreground="{StaticResource BrushLightGray}" HorizontalAlignment="Right"/>
+                                    <TextBlock Text="{Binding Device.FirmwareVersion}" Foreground="{StaticResource BrushLightGray}" HorizontalAlignment="Right"/>
                                 </Grid>
                                 
                                 <Grid Margin="0,0,0,20">
                                     <TextBlock Text="Dual Connection" Foreground="{StaticResource BrushWhite}" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                    <ToggleButton Style="{StaticResource CustomToggleSwitchStyle}" IsChecked="{Binding DualConnectionEnabled}" Command="{Binding ToggleDualConnectionCommand}" HorizontalAlignment="Right"/>
+                                    <ToggleButton Style="{StaticResource CustomToggleSwitchStyle}" IsChecked="{Binding Device.DualConnectionEnabled}" Command="{Binding ToggleDualConnectionCommand}" HorizontalAlignment="Right"/>
                                 </Grid>
                                 
                                 <ItemsControl ItemsSource="{Binding DualDevices}" Visibility="{Binding DualConnectionEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,-10,0,20">
@@ -551,7 +551,7 @@
 
                                 <Grid Margin="0,0,0,20">
                                     <TextBlock Text="Low Lag Mode" Foreground="{StaticResource BrushWhite}" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                    <ToggleButton Style="{StaticResource CustomToggleSwitchStyle}" IsChecked="{Binding LowLatencyMode}" Command="{Binding ToggleLowLatencyCommand}" HorizontalAlignment="Right"/>
+                                    <ToggleButton Style="{StaticResource CustomToggleSwitchStyle}" IsChecked="{Binding Device.LowLatencyMode}" Command="{Binding ToggleLowLatencyCommand}" HorizontalAlignment="Right"/>
                                 </Grid>
 
                                 <Grid Margin="0,0,0,20">
@@ -577,7 +577,7 @@
                                         <ComboBox Width="120"
                                                   ItemsSource="{Binding AutoPowerOffOptions}" 
                                                   DisplayMemberPath="Display" SelectedValuePath="Value" 
-                                                  SelectedValue="{Binding AutoPowerOffTime}">
+                                                  SelectedValue="{Binding Device.AutoPowerOffTime}">
                                         </ComboBox>
                                         <Button Content="APPLY" Command="{Binding ApplyAutoPowerOffCommand}" Background="{StaticResource BrushDarkGray}" Foreground="{StaticResource BrushLightGray}" Padding="15,5" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"/>
                                     </StackPanel>
@@ -593,3 +593,4 @@
         </Grid>
     </Border>
 </Window>
+

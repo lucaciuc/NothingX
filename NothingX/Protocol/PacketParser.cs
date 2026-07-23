@@ -64,7 +64,7 @@ public class PacketParser
 
         // Read control to check for CRC
         ushort control = (ushort)(_buffer[1] | (_buffer[2] << 8));
-        bool hasCrc = (control & 0x20) != 0;
+        bool hasCrc = (control & NothingPacket.MASK_CRC) != 0;
 
         // Read payload length
         ushort length = (ushort)(_buffer[5] | (_buffer[6] << 8));

@@ -19,7 +19,7 @@ public class NothingPacket
 
     // Control field masks
     private const int MASK_RSP_CODE = 0x1F;
-    private const int MASK_CRC = 0x20;
+    internal const int MASK_CRC = 0x20;
     private const int MASK_MULTI_FRAME = 0x40;
     private const int MASK_DEVICE_TYPE = 0x0F00;
 

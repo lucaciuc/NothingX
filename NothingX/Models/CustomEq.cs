@@ -44,21 +44,7 @@ public class CustomEq
         int offset = 6;
         for (int i = 0; i < size; i++)
         {
-            var band = Bands[i];
-            payload[offset] = band.FilterType;
-            offset += 1;
-
-            var bGain = BitConverter.GetBytes(Math.Clamp(band.Gain, -6f, 6f));
-            Array.Copy(bGain, 0, payload, offset, 4);
-            offset += 4;
-
-            var bFreq = BitConverter.GetBytes(band.Frequency);
-            Array.Copy(bFreq, 0, payload, offset, 4);
-            offset += 4;
-
-            var bQual = BitConverter.GetBytes(band.Quality);
-            Array.Copy(bQual, 0, payload, offset, 4);
-            offset += 4;
+            Bands[i].WriteToPayload(payload, ref offset);
         }
 
         return payload;
@@ -83,11 +69,7 @@ public class CustomEq
         int offset = 6;
         for (int i = 0; i < size && i < 8; i++)
         {
-            eq.Bands[i].FilterType = payload[offset];
-            eq.Bands[i].Gain = BitConverter.ToSingle(payload, offset + 1);
-            eq.Bands[i].Frequency = BitConverter.ToSingle(payload, offset + 5);
-            eq.Bands[i].Quality = BitConverter.ToSingle(payload, offset + 9);
-            offset += 13;
+            eq.Bands[i].ReadFromPayload(payload, ref offset);
         }
 
         return eq;
@@ -100,4 +82,32 @@ public class EqBand
     public float Gain { get; set; }
     public float Frequency { get; set; }
     public float Quality { get; set; }
+
+    public void WriteToPayload(byte[] payload, ref int offset)
+    {
+        payload[offset++] = FilterType;
+        
+        var bGain = BitConverter.GetBytes(Math.Clamp(Gain, -6f, 6f));
+        Array.Copy(bGain, 0, payload, offset, 4);
+        offset += 4;
+
+        var bFreq = BitConverter.GetBytes(Frequency);
+        Array.Copy(bFreq, 0, payload, offset, 4);
+        offset += 4;
+
+        var bQual = BitConverter.GetBytes(Quality);
+        Array.Copy(bQual, 0, payload, offset, 4);
+        offset += 4;
+    }
+
+    public void ReadFromPayload(byte[] payload, ref int offset)
+    {
+        FilterType = payload[offset++];
+        Gain = BitConverter.ToSingle(payload, offset);
+        offset += 4;
+        Frequency = BitConverter.ToSingle(payload, offset);
+        offset += 4;
+        Quality = BitConverter.ToSingle(payload, offset);
+        offset += 4;
+    }
 }
