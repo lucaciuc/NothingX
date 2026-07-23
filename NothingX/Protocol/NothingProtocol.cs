@@ -439,7 +439,7 @@ public class NothingProtocol : IDisposable
     public async Task<List<DualDevice>?> GetDualDeviceListAsync()
     {
         var response = await SendAndWaitAsync(
-            _builder.BuildQuery(Commands.Query.GET_DUAL_DEVICE_LIST));
+            _builder.Build(Commands.Query.GET_DUAL_DEVICE_LIST, [0x00]));
             
         if (response?.IsOk == true && response.Payload.Length >= 3)
         {
@@ -456,12 +456,16 @@ public class NothingProtocol : IDisposable
                 System.Array.Copy(response.Payload, offset + 1, macBytes, 0, 6);
                 string macAddress = BitConverter.ToString(macBytes).Replace("-", ":");
                 
-                int nameLen = response.Payload[offset + 7];
+                int nameHeader = response.Payload[offset + 7];
+                int nameLen = (nameHeader & 0x80) != 0 ? 31 : (nameHeader & 0x7F);
                 offset += 8;
                 
                 if (offset + nameLen > response.Payload.Length) break;
                 
                 string name = Encoding.UTF8.GetString(response.Payload, offset, nameLen);
+                if ((nameHeader & 0x80) != 0) {
+                    name = name.Replace("\uFFFD", "") + "...";
+                }
                 offset += nameLen;
                 
                 list.Add(new DualDevice

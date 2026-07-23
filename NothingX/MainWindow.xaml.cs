@@ -10,6 +10,40 @@ namespace NothingX
         public MainWindow()
         {
             InitializeComponent();
+            
+            var settings = NothingX.Models.AppSettings.Load();
+            if (!double.IsNaN(settings.WindowTop) && !double.IsNaN(settings.WindowLeft))
+            {
+                this.WindowStartupLocation = WindowStartupLocation.Manual;
+                this.Top = settings.WindowTop;
+                this.Left = settings.WindowLeft;
+                this.Width = settings.WindowWidth;
+                this.Height = settings.WindowHeight;
+                this.WindowState = settings.WindowState;
+            }
+        }
+
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            var settings = new NothingX.Models.AppSettings
+            {
+                WindowState = this.WindowState,
+                WindowTop = this.Top,
+                WindowLeft = this.Left,
+                WindowWidth = this.Width,
+                WindowHeight = this.Height
+            };
+            
+            if (this.WindowState == WindowState.Maximized)
+            {
+                settings.WindowTop = this.RestoreBounds.Top;
+                settings.WindowLeft = this.RestoreBounds.Left;
+                settings.WindowWidth = this.RestoreBounds.Width;
+                settings.WindowHeight = this.RestoreBounds.Height;
+            }
+            
+            settings.Save();
+            base.OnClosing(e);
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)

@@ -28,7 +28,7 @@
     </Window.Resources>
 
     <!-- App Container -->
-    <Border Background="{StaticResource BrushBlack}" BorderBrush="{StaticResource BrushDarkGray}" BorderThickness="1">
+    <Border Background="{StaticResource BrushBlack}" BorderBrush="{StaticResource BrushBorderGray}" BorderThickness="1">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -40,9 +40,9 @@
                 <TextBlock Text="Nothing X" Foreground="{StaticResource BrushLightGray}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold"/>
                 <!-- Window Controls -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True">
-                    <Button Content="−" Width="40" Background="Transparent" Foreground="{StaticResource BrushLightGray}" Click="MinimizeButton_Click" Padding="0"/>
-                    <Button Content="⬜" Width="40" Background="Transparent" Foreground="{StaticResource BrushLightGray}" Click="MaximizeButton_Click" Padding="0" FontSize="10"/>
-                    <Button Content="✕" Width="40" Background="Transparent" Foreground="{StaticResource BrushLightGray}" Click="CloseButton_Click" Padding="0"/>
+                    <Button Content="−" Style="{StaticResource WindowControlButton}" Click="MinimizeButton_Click"/>
+                    <Button Content="⬜" Style="{StaticResource WindowControlButton}" Click="MaximizeButton_Click" FontSize="10"/>
+                    <Button Content="✕" Style="{StaticResource WindowControlButton}" Click="CloseButton_Click"/>
                 </StackPanel>
             </Grid>
 
@@ -97,7 +97,7 @@
                                             </Style.Triggers>
                                         </Style>
                                     </StackPanel.Style>
-                                    <TextBlock Text="⚡" Foreground="LightGreen" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="⚡" Foreground="{StaticResource BrushWhite}" FontSize="12" Margin="0,0,5,0" VerticalAlignment="Center"/>
                                     <TextBlock Text="{Binding Device.Battery.Case, StringFormat='{}{0}%'}" Foreground="{StaticResource BrushLightGray}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
 
@@ -126,7 +126,7 @@
                             </Grid>
 
                             <!-- Debug Status Text -->
-                            <TextBlock Text="{Binding StatusText}" Foreground="Yellow" FontSize="12" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                            <TextBlock Text="{Binding StatusText}" Foreground="{StaticResource BrushRed}" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
 
                             <!-- Noise Cancellation Card -->
                             <Border Style="{StaticResource CardBorder}" Margin="15,20">
@@ -192,7 +192,7 @@
                                                                         MidValue="{Binding SimpleEqMid, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                         TrebleValue="{Binding SimpleEqTreble, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-                                            <Button Content="APPLY SIMPLE EQ" Command="{Binding ApplySimpleEqCommand}" Background="{StaticResource BrushRed}" Margin="15,20,15,0"/>
+                                            <Button Content="APPLY SIMPLE EQ" Command="{Binding ApplySimpleEqCommand}" Margin="15,20,15,0"/>
                                         </StackPanel>
                                     </Grid>
 
@@ -217,7 +217,7 @@
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
 
-                                            <Button Content="APPLY ADVANCED EQ" Command="{Binding ApplyCustomEqCommand}" Background="{StaticResource BrushRed}" Margin="15,20,15,0"/>
+                                            <Button Content="APPLY ADVANCED EQ" Command="{Binding ApplyCustomEqCommand}" Margin="15,20,15,0"/>
                                         </StackPanel>
                                     </Grid>
                                     
@@ -457,7 +457,7 @@
                     <StackPanel>
                         <!-- Header with Back Button -->
                         <Grid Margin="15,10">
-                            <Button Content="← Back" HorizontalAlignment="Left" Background="Transparent" Foreground="{StaticResource BrushWhite}" Command="{Binding GoBackToDeviceCommand}"/>
+                            <Button Content="← Back" HorizontalAlignment="Left" Style="{StaticResource TextButton}" Command="{Binding GoBackToDeviceCommand}"/>
                             <TextBlock Text="Controls" Style="{StaticResource HeadingText}" HorizontalAlignment="Center" Margin="0"/>
                         </Grid>
                         
@@ -509,7 +509,7 @@
                 <Grid Visibility="{Binding SelectedDeviceView, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Settings}">
                     <StackPanel>
                         <Grid Margin="15,10">
-                            <Button Content="← Back" HorizontalAlignment="Left" Background="Transparent" Foreground="{StaticResource BrushWhite}" Command="{Binding GoBackToDeviceCommand}"/>
+                            <Button Content="← Back" HorizontalAlignment="Left" Style="{StaticResource TextButton}" Command="{Binding GoBackToDeviceCommand}"/>
                             <TextBlock Text="Settings" Style="{StaticResource HeadingText}" HorizontalAlignment="Center" Margin="0"/>
                         </Grid>
                         
@@ -525,7 +525,7 @@
                                     <ToggleButton Style="{StaticResource CustomToggleSwitchStyle}" IsChecked="{Binding Device.DualConnectionEnabled}" Command="{Binding ToggleDualConnectionCommand}" HorizontalAlignment="Right"/>
                                 </Grid>
                                 
-                                <ItemsControl ItemsSource="{Binding DualDevices}" Visibility="{Binding DualConnectionEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,-10,0,20">
+                                <ItemsControl ItemsSource="{Binding Device.DualDevices}" Visibility="{Binding Device.DualConnectionEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,-10,0,20">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Grid Margin="15,5,0,5">
@@ -556,9 +556,9 @@
 
                                 <Grid Margin="0,0,0,20">
                                     <TextBlock Text="Find My Earbuds" Foreground="{StaticResource BrushWhite}" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                                    <Button Command="{Binding FindEarbudsCommand}" Background="{StaticResource BrushDarkGray}" Foreground="{StaticResource BrushLightGray}" Padding="15,5" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
+                                    <Button Command="{Binding FindEarbudsCommand}" HorizontalAlignment="Right">
                                         <Button.Style>
-                                            <Style TargetType="Button">
+                                            <Style TargetType="Button" BasedOn="{StaticResource FlatActionButton}">
                                                 <Setter Property="Content" Value="PLAY SOUND"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsFinding}" Value="True">
@@ -579,11 +579,11 @@
                                                   DisplayMemberPath="Display" SelectedValuePath="Value" 
                                                   SelectedValue="{Binding Device.AutoPowerOffTime}">
                                         </ComboBox>
-                                        <Button Content="APPLY" Command="{Binding ApplyAutoPowerOffCommand}" Background="{StaticResource BrushDarkGray}" Foreground="{StaticResource BrushLightGray}" Padding="15,5" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"/>
+                                        <Button Content="APPLY" Style="{StaticResource FlatActionButton}" Command="{Binding ApplyAutoPowerOffCommand}" Margin="10,0,0,0"/>
                                     </StackPanel>
                                 </Grid>
                                 
-                                <Button Content="DISCONNECT" Background="{StaticResource BrushDarkGray}" Foreground="{StaticResource BrushRed}" BorderThickness="1" BorderBrush="{StaticResource BrushRed}" Command="{Binding DisconnectDeviceCommand}" Margin="0,20,0,0"/>
+                                <Button Content="DISCONNECT" Style="{StaticResource DestructiveButton}" Command="{Binding DisconnectDeviceCommand}" Margin="0,20,0,0"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>

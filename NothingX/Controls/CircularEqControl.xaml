@@ -8,48 +8,48 @@
              SizeChanged="UserControl_SizeChanged">
     <Grid>
         <!-- Background Circle -->
-        <Ellipse x:Name="BgCircle" Fill="#1A1A1A" Stroke="#333333" StrokeThickness="1"/>
+        <Ellipse x:Name="BgCircle" Fill="{StaticResource BrushDarkGray}" Stroke="{StaticResource BrushBorderGray}" StrokeThickness="1"/>
 
         <!-- Center Dot -->
-        <Ellipse Width="10" Height="10" Fill="#000000" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Ellipse Width="10" Height="10" Fill="{StaticResource BrushWhite}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
         <!-- Axes lines (drawn in code-behind for accuracy) -->
         <Canvas x:Name="AxesCanvas" IsHitTestVisible="False"/>
 
         <!-- Blob Polygon -->
-        <Polygon x:Name="EqBlob" Fill="#33FFFFFF" Stroke="#66FFFFFF" StrokeThickness="2" StrokeLineJoin="Round" IsHitTestVisible="False"/>
+        <Polygon x:Name="EqBlob" Fill="#33E1000F" Stroke="{StaticResource BrushRed}" StrokeThickness="2" StrokeLineJoin="Round" IsHitTestVisible="False"/>
 
         <!-- Draggable Thumbs -->
         <Canvas x:Name="ThumbCanvas">
             <!-- Labels -->
-            <TextBlock x:Name="MidLabel" Text="Mid" Foreground="#888888" FontSize="12" FontFamily="Consolas" IsHitTestVisible="False"/>
-            <TextBlock x:Name="BassLabel" Text="Bass" Foreground="#888888" FontSize="12" FontFamily="Consolas" IsHitTestVisible="False"/>
-            <TextBlock x:Name="TrebleLabel" Text="Treble" Foreground="#888888" FontSize="12" FontFamily="Consolas" IsHitTestVisible="False"/>
+            <TextBlock x:Name="MidLabel" Text="Mid" Foreground="{StaticResource BrushLightGray}" FontSize="12" FontFamily="Consolas" IsHitTestVisible="False"/>
+            <TextBlock x:Name="BassLabel" Text="Bass" Foreground="{StaticResource BrushLightGray}" FontSize="12" FontFamily="Consolas" IsHitTestVisible="False"/>
+            <TextBlock x:Name="TrebleLabel" Text="Treble" Foreground="{StaticResource BrushLightGray}" FontSize="12" FontFamily="Consolas" IsHitTestVisible="False"/>
 
             <!-- Value Labels (shown near each thumb) -->
-            <TextBlock x:Name="MidValueLabel" Text="0" Foreground="White" FontSize="11" FontWeight="Bold" FontFamily="Consolas" IsHitTestVisible="False"/>
-            <TextBlock x:Name="BassValueLabel" Text="0" Foreground="White" FontSize="11" FontWeight="Bold" FontFamily="Consolas" IsHitTestVisible="False"/>
-            <TextBlock x:Name="TrebleValueLabel" Text="0" Foreground="White" FontSize="11" FontWeight="Bold" FontFamily="Consolas" IsHitTestVisible="False"/>
+            <TextBlock x:Name="MidValueLabel" Text="0" Foreground="{StaticResource BrushWhite}" FontSize="11" FontWeight="Bold" FontFamily="Consolas" IsHitTestVisible="False"/>
+            <TextBlock x:Name="BassValueLabel" Text="0" Foreground="{StaticResource BrushWhite}" FontSize="11" FontWeight="Bold" FontFamily="Consolas" IsHitTestVisible="False"/>
+            <TextBlock x:Name="TrebleValueLabel" Text="0" Foreground="{StaticResource BrushWhite}" FontSize="11" FontWeight="Bold" FontFamily="Consolas" IsHitTestVisible="False"/>
 
             <!-- Thumbs -->
             <Thumb x:Name="MidThumb" DragDelta="Thumb_DragDelta" Tag="Mid" Cursor="Hand">
                 <Thumb.Template>
                     <ControlTemplate>
-                        <Ellipse Width="20" Height="20" Fill="White" Margin="-10,-10,0,0"/>
+                        <Ellipse Width="20" Height="20" Fill="{StaticResource BrushWhite}" Stroke="{StaticResource BrushRed}" StrokeThickness="3" Margin="-10,-10,0,0"/>
                     </ControlTemplate>
                 </Thumb.Template>
             </Thumb>
             <Thumb x:Name="BassThumb" DragDelta="Thumb_DragDelta" Tag="Bass" Cursor="Hand">
                 <Thumb.Template>
                     <ControlTemplate>
-                        <Ellipse Width="20" Height="20" Fill="White" Margin="-10,-10,0,0"/>
+                        <Ellipse Width="20" Height="20" Fill="{StaticResource BrushWhite}" Stroke="{StaticResource BrushRed}" StrokeThickness="3" Margin="-10,-10,0,0"/>
                     </ControlTemplate>
                 </Thumb.Template>
             </Thumb>
             <Thumb x:Name="TrebleThumb" DragDelta="Thumb_DragDelta" Tag="Treble" Cursor="Hand">
                 <Thumb.Template>
                     <ControlTemplate>
-                        <Ellipse Width="20" Height="20" Fill="White" Margin="-10,-10,0,0"/>
+                        <Ellipse Width="20" Height="20" Fill="{StaticResource BrushWhite}" Stroke="{StaticResource BrushRed}" StrokeThickness="3" Margin="-10,-10,0,0"/>
                     </ControlTemplate>
                 </Thumb.Template>
             </Thumb>
