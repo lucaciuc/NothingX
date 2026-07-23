@@ -85,7 +85,7 @@ public static class Commands
         public const int SET_EQ_STATUS = 0xF005;
         public const int SET_HIGH_VOLUME_GAIN_LEVEL = 0xF006;
         public const int SET_UTC_TIME = 0xF007;
-        public const int SET_AUTO_POWER_OFF_TIME = 0xF008;
+        public const int SET_AUTO_POWER_OFF_TIME = 0xF00B;
         public const int SET_BOX_LED_COLOR = 0xF009;
         public const int SET_NOISE_REDUCTION_CONFIGURATION = 0xF00E;
         public const int SET_CURRENT_NOISE_REDUCTION = 0xF00F;
@@ -93,9 +93,11 @@ public static class Commands
         public const int RESTORE_FACTORY_SETTING = 0xF011;
         public const int REGISTER_NOTIFICATION = 0xF012;
         public const int UNREGISTER_NOTIFICATION = 0xF013;
-        public const int SET_LAG_MODE = 0xF014;
+        public const int SET_LAG_MODE = 0xF040;
         public const int SET_CUSTOM_EQ = 0xF015;
         public const int SET_ADAPTIVE_EQ = 0xF016;
+        public const int SET_DUAL_ENABLE = 0xF01A;
+        public const int SET_DUAL_DEVICE = 0xF01B;
         // Added for EQ Sync Fix
         public const int SET_SIMPLE_CUSTOM_EQ = 0xF041;
         public const int SET_ADVANCE_CUSTOM_EQ_MODE = 0xF042;

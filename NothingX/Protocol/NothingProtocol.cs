@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Text;
 using NothingX.Bluetooth;
 using NothingX.Models;
 
@@ -104,6 +105,8 @@ public class NothingProtocol : IDisposable
             await GetAncLevelAsync();
             await GetSystemAudioAsync();
             await GetAutoPowerOffAsync();
+            await GetDualConnectionAsync();
+            await GetDualDeviceListAsync();
         }
         finally
         {
@@ -342,12 +345,18 @@ public class NothingProtocol : IDisposable
     /// <summary>Get High-Quality Audio (LDAC) status</summary>
     public async Task<bool?> GetSystemAudioAsync()
     {
-        // NOTE: No known GET command for LDAC status on Nothing Headphone (a).
-        // 0xC01D is ANC config (always returns 01), 0xC057 gets no response.
-        // LDAC state is managed locally — the SET command (0xF01C) works and 
-        // causes a codec switch + reconnect, so we preserve the last known state.
-        await Task.CompletedTask; // No-op query
-        return Device.HighQualityAudioEnabled;
+        // We found out through reverse engineering that while the SET command is SET_SYSTEM_AUDIO (0xF01C), 
+        // the official app uses GET_LHDC_COMMANDS (0xC029) to query the LDAC status!
+        var response = await SendAndWaitAsync(
+            _builder.BuildQuery(Commands.Query.GET_LHDC_COMMANDS));
+            
+        if (response?.IsOk == true && response.Payload.Length >= 1)
+        {
+            bool enabled = response.Payload[0] != 0;
+            Device.HighQualityAudioEnabled = enabled;
+            return enabled;
+        }
+        return null;
     }
 
     /// <summary>Set High-Quality Audio (LDAC)</summary>
@@ -370,9 +379,10 @@ public class NothingProtocol : IDisposable
     {
         var response = await SendAndWaitAsync(
             _builder.BuildQuery(Commands.Query.GET_AUTO_POWER_OFF_TIME));
-        if (response?.IsOk == true && response.Payload.Length >= 1)
+        if (response?.IsOk == true && response.Payload.Length >= 2)
         {
-            int time = response.Payload[0];
+            // Payload format is usually [0x00, minutes, 0x00]
+            int time = response.Payload[1];
             Device.AutoPowerOffTime = time;
             return time;
         }
@@ -391,6 +401,95 @@ public class NothingProtocol : IDisposable
             return true;
         }
         return false;
+    }
+
+    /// <summary>Get Dual Connection Status</summary>
+    public async Task<bool?> GetDualConnectionAsync()
+    {
+        var response = await SendAndWaitAsync(
+            _builder.BuildQuery(Commands.Query.GET_DUAL_ENABLE));
+        if (response?.IsOk == true && response.Payload.Length >= 1)
+        {
+            bool enabled = response.Payload[0] == 1;
+            Device.DualConnectionEnabled = enabled;
+            return enabled;
+        }
+        return null;
+    }
+
+    /// <summary>Set Dual Connection Status</summary>
+    public async Task<bool> SetDualConnectionAsync(bool enabled)
+    {
+        var response = await SendAndWaitAsync(
+            _builder.BuildSetDualConnection(enabled));
+        if (response?.IsOk == true)
+        {
+            Device.DualConnectionEnabled = enabled;
+            if (enabled)
+            {
+                // Fetch the device list immediately after enabling
+                await GetDualDeviceListAsync();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>Get list of paired dual connection devices</summary>
+    public async Task<List<DualDevice>?> GetDualDeviceListAsync()
+    {
+        var response = await SendAndWaitAsync(
+            _builder.BuildQuery(Commands.Query.GET_DUAL_DEVICE_LIST));
+            
+        if (response?.IsOk == true && response.Payload.Length >= 3)
+        {
+            var list = new List<DualDevice>();
+            int count = response.Payload[2];
+            int offset = 3;
+            
+            for (int i = 0; i < count; i++)
+            {
+                if (offset + 8 > response.Payload.Length) break;
+                
+                byte status = response.Payload[offset];
+                byte[] macBytes = new byte[6];
+                System.Array.Copy(response.Payload, offset + 1, macBytes, 0, 6);
+                string macAddress = BitConverter.ToString(macBytes).Replace("-", ":");
+                
+                int nameLen = response.Payload[offset + 7];
+                offset += 8;
+                
+                if (offset + nameLen > response.Payload.Length) break;
+                
+                string name = Encoding.UTF8.GetString(response.Payload, offset, nameLen);
+                offset += nameLen;
+                
+                list.Add(new DualDevice
+                {
+                    Name = name,
+                    MacAddress = macAddress,
+                    MacBytes = macBytes,
+                    IsConnected = (status & 0x01) != 0,
+                    IsCurrentDevice = (status & 0x10) != 0
+                });
+            }
+            
+            // Update device info
+            System.Windows.Application.Current.Dispatcher.Invoke(() => {
+                Device.DualDevices.Clear();
+                foreach (var d in list) Device.DualDevices.Add(d);
+            });
+            return list;
+        }
+        return null;
+    }
+    
+    /// <summary>Set dual connection device state</summary>
+    public async Task<bool> SetDualDeviceAsync(byte[] macAddress, bool connect)
+    {
+        var response = await SendAndWaitAsync(
+            _builder.BuildSetDualDevice(connect, macAddress));
+        return response?.IsOk == true;
     }
 
     /// <summary>Get custom EQ values</summary>
@@ -555,23 +654,24 @@ public class NothingProtocol : IDisposable
         foreach (var packet in packets)
         {
             Log?.Invoke($"← {packet}");
+            try { System.IO.File.AppendAllText(@"C:\Users\Andrew\Desktop\packet_log.txt", $"{DateTime.Now:HH:mm:ss.fff} | CMD: {packet.Command:X4} | {packet}\n"); } catch {}
             HandleReceivedPacket(packet);
         }
     }
 
     private void HandleReceivedPacket(NothingPacket packet)
     {
-        int cmd = packet.ResponseCommand;
+        int responseCmd = packet.ResponseCommand;
 
         // Check if this is a response to a pending request
-        if (_pendingRequests.TryRemove(cmd, out var tcs))
+        if (_pendingRequests.TryRemove(responseCmd, out var tcs))
         {
             tcs.TrySetResult(packet);
             return;
         }
 
-        // Handle push notifications
-        switch (cmd)
+        // Handle push notifications. Notifications are sent by the earbuds with the request bit set.
+        switch (packet.RequestCommand)
         {
             case Commands.Notification.EVENT_BATTERY_CHANGED:
                 // Debounce battery queries (max 1 per second)
@@ -592,8 +692,20 @@ public class NothingProtocol : IDisposable
                 break;
 
             case Commands.Notification.EVENT_GAME_MODE_CHANGED:
+            case Commands.Query.GET_HOST_LAG_MODE:
                 if (packet.Payload.Length >= 1)
                     Device.LowLatencyMode = packet.Payload[0] == 1;
+                break;
+
+            case Commands.Query.GET_SPATIAL_AUDIO:
+                if (packet.Payload.Length >= 1)
+                    Device.SpatialAudioMode = (SpatialAudioMode)packet.Payload[0];
+                break;
+                
+            case Commands.Notification.EVENT_DUAL_DEVICE_CONNECT_STATE:
+            case Commands.Notification.EVENT_DUAL_DEVICE_SWITCH_STATE:
+                _ = GetDualConnectionAsync();
+                _ = GetDualDeviceListAsync();
                 break;
 
             case Commands.Notification.EVENT_DEVICE_STATUS_CHANGED:

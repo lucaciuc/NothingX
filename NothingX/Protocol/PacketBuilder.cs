@@ -62,7 +62,7 @@ public class PacketBuilder
 
     /// <summary>Build a "find my earbuds" packet</summary>
     public NothingPacket BuildFindEarbuds(bool start)
-        => Build(Commands.Set.SET_WHERE_AM_I, [start ? (byte)0x01 : (byte)0x00]);
+        => Build(Commands.Set.SET_WHERE_AM_I, [0x06, start ? (byte)0x01 : (byte)0x00]);
 
     /// <summary>Build a set ANC mode packet</summary>
     public NothingPacket BuildSetAnc(byte mode)
@@ -74,7 +74,7 @@ public class PacketBuilder
 
     /// <summary>Build a low latency / game mode packet</summary>
     public NothingPacket BuildSetLowLatency(bool enabled)
-        => Build(Commands.Set.SET_LAG_MODE, [enabled ? (byte)0x01 : (byte)0x00]);
+        => Build(Commands.Set.SET_LAG_MODE, [enabled ? (byte)0x01 : (byte)0x02]);
 
     /// <summary>Build a register notification packet</summary>
     public NothingPacket BuildRegisterNotification(int notificationCommand)
@@ -117,5 +117,21 @@ public class PacketBuilder
 
     /// <summary>Build a set auto power off time packet</summary>
     public NothingPacket BuildSetAutoPowerOff(byte minutes)
-        => Build(Commands.Set.SET_AUTO_POWER_OFF_TIME, [minutes]);
+        => Build(Commands.Set.SET_AUTO_POWER_OFF_TIME, [0x00, minutes, 0x00]);
+
+    /// <summary>Build a set dual connection enable packet</summary>
+    public NothingPacket BuildSetDualConnection(bool enabled)
+        => Build(Commands.Set.SET_DUAL_ENABLE, [enabled ? (byte)0x01 : (byte)0x00]);
+
+    /// <summary>Build a set dual connection device connect/disconnect packet</summary>
+    public NothingPacket BuildSetDualDevice(bool connect, byte[] macAddress)
+    {
+        var payload = new byte[7];
+        payload[0] = connect ? (byte)0x01 : (byte)0x00;
+        if (macAddress != null && macAddress.Length >= 6)
+        {
+            System.Array.Copy(macAddress, 0, payload, 1, 6);
+        }
+        return Build(Commands.Set.SET_DUAL_DEVICE, payload);
+    }
 }

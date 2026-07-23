@@ -9,6 +9,11 @@
     <AssemblyName>Nothing X</AssemblyName>
     <RootNamespace>NothingX</RootNamespace>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+
+    <!-- Optimizations for minimal RAM and fast startup -->
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
   </PropertyGroup>
 
   <ItemGroup>

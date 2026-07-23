@@ -11,7 +11,7 @@ namespace NothingX.ViewModels;
 
 public partial class EqBandViewModel : ObservableObject
 {
-    private readonly Action _onChanged;
+    private readonly Action? _onChanged;
 
     [ObservableProperty] private string _label = "";
     
@@ -33,8 +33,24 @@ public partial class EqBandViewModel : ObservableObject
     }
 }
 
+public class AutoPowerOffOption
+{
+    public string Display { get; set; } = "";
+    public int Value { get; set; }
+    
+    public override string ToString() => Display;
+}
+
 public partial class MainViewModel : ObservableObject, IDisposable
 {
+    public List<AutoPowerOffOption> AutoPowerOffOptions { get; } = [
+        new AutoPowerOffOption { Display = "30 mins", Value = 30 },
+        new AutoPowerOffOption { Display = "1 hour", Value = 60 },
+        new AutoPowerOffOption { Display = "2 hours", Value = 120 },
+        new AutoPowerOffOption { Display = "3 hours", Value = 180 },
+        new AutoPowerOffOption { Display = "4 hours", Value = 240 }
+    ];
+
     private readonly NothingProtocol _protocol = new();
 
     [ObservableProperty] private bool _isConnected;
@@ -101,6 +117,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private int _ancLevel;
     [ObservableProperty] private bool _highQualityAudioEnabled;
     [ObservableProperty] private int _autoPowerOffTime;
+    [ObservableProperty] private bool _dualConnectionEnabled;
+    public System.Collections.ObjectModel.ObservableCollection<DualDevice> DualDevices => _protocol.Device.DualDevices;
     
     [ObservableProperty] private GestureAction _leftDoubleTap;
     [ObservableProperty] private GestureAction _leftTripleTap;
@@ -189,6 +207,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         AncLevel = dev.AncLevel;
         HighQualityAudioEnabled = dev.HighQualityAudioEnabled;
         AutoPowerOffTime = dev.AutoPowerOffTime;
+        DualConnectionEnabled = dev.DualConnectionEnabled;
 
         if (dev.SimpleEq != null)
         {
@@ -305,7 +324,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task ToggleLowLatencyAsync()
     {
-        await _protocol.SetLowLatencyAsync(!LowLatencyMode);
+        await _protocol.SetLowLatencyAsync(LowLatencyMode);
     }
 
     [RelayCommand]
@@ -334,6 +353,25 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private async Task ApplyAutoPowerOffAsync()
     {
         await _protocol.SetAutoPowerOffAsync(AutoPowerOffTime);
+    }
+
+    [RelayCommand]
+    private async Task ToggleDualConnectionAsync()
+    {
+        await _protocol.SetDualConnectionAsync(DualConnectionEnabled);
+    }
+
+    [RelayCommand]
+    private async Task ToggleDualDeviceAsync(DualDevice device)
+    {
+        if (device == null || device.IsCurrentDevice) return;
+        
+        bool success = await _protocol.SetDualDeviceAsync(device.MacBytes, device.IsConnected);
+        if (success)
+        {
+            // Re-fetch the list to ensure accurate state
+            await _protocol.GetDualDeviceListAsync();
+        }
     }
 
     [RelayCommand]

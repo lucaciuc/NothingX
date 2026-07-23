@@ -2,3 +2,5 @@ REV_ENG/
 .vs/
 NothingX/bin/
 NothingX/obj/
+*.txt
+*.py

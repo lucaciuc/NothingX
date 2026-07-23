@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace NothingX.Models;
@@ -30,6 +31,8 @@ public partial class DeviceInfo : ObservableObject
     [ObservableProperty] private int _ancLevel;
     [ObservableProperty] private bool _highQualityAudioEnabled;
     [ObservableProperty] private int _autoPowerOffTime;
+    [ObservableProperty] private bool _dualConnectionEnabled;
+    [ObservableProperty] private ObservableCollection<DualDevice> _dualDevices = new();
     
     [ObservableProperty] private SimpleEq? _simpleEq;
     [ObservableProperty] private CustomEq? _advancedEq;

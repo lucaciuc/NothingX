@@ -521,13 +521,63 @@
                                 </Grid>
                                 
                                 <Grid Margin="0,0,0,20">
+                                    <TextBlock Text="Dual Connection" Foreground="{StaticResource BrushWhite}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <ToggleButton Style="{StaticResource CustomToggleSwitchStyle}" IsChecked="{Binding DualConnectionEnabled}" Command="{Binding ToggleDualConnectionCommand}" HorizontalAlignment="Right"/>
+                                </Grid>
+                                
+                                <ItemsControl ItemsSource="{Binding DualDevices}" Visibility="{Binding DualConnectionEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,-10,0,20">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="15,5,0,5">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}" Foreground="{StaticResource BrushWhite}" Opacity="0.8"/>
+                                                    <TextBlock Text=" (Current)" Foreground="{StaticResource BrushRed}" Visibility="{Binding IsCurrentDevice, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                </StackPanel>
+                                                <ToggleButton Style="{StaticResource CustomToggleSwitchStyle}" 
+                                                              IsChecked="{Binding IsConnected}" 
+                                                              IsEnabled="{Binding IsCurrentDevice, Converter={StaticResource InverseBooleanConverter}}"
+                                                              Command="{Binding DataContext.ToggleDualDeviceCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                              CommandParameter="{Binding}"
+                                                              HorizontalAlignment="Right"
+                                                              RenderTransformOrigin="0.5,0.5">
+                                                    <ToggleButton.RenderTransform>
+                                                        <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+                                                    </ToggleButton.RenderTransform>
+                                                </ToggleButton>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <Grid Margin="0,0,0,20">
+                                    <TextBlock Text="Low Lag Mode" Foreground="{StaticResource BrushWhite}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <ToggleButton Style="{StaticResource CustomToggleSwitchStyle}" IsChecked="{Binding LowLatencyMode}" Command="{Binding ToggleLowLatencyCommand}" HorizontalAlignment="Right"/>
+                                </Grid>
+
+                                <Grid Margin="0,0,0,20">
+                                    <TextBlock Text="Find My Earbuds" Foreground="{StaticResource BrushWhite}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <Button Command="{Binding FindEarbudsCommand}" Background="{StaticResource BrushDarkGray}" Foreground="{StaticResource BrushLightGray}" Padding="15,5" BorderThickness="0" Cursor="Hand" HorizontalAlignment="Right">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Content" Value="PLAY SOUND"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsFinding}" Value="True">
+                                                        <Setter Property="Content" Value="STOP SOUND"/>
+                                                        <Setter Property="Foreground" Value="{StaticResource BrushRed}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </Grid>
+                                
+                                <Grid Margin="0,0,0,20">
                                     <TextBlock Text="Standby Auto Power-Off" Foreground="{StaticResource BrushWhite}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                        <ComboBox Width="120" SelectedValuePath="Tag" SelectedValue="{Binding AutoPowerOffTime}">
-                                            <ComboBoxItem Content="Never" Tag="0"/>
-                                            <ComboBoxItem Content="30 mins" Tag="30"/>
-                                            <ComboBoxItem Content="60 mins" Tag="60"/>
-                                            <ComboBoxItem Content="120 mins" Tag="120"/>
+                                        <ComboBox Width="120"
+                                                  ItemsSource="{Binding AutoPowerOffOptions}" 
+                                                  DisplayMemberPath="Display" SelectedValuePath="Value" 
+                                                  SelectedValue="{Binding AutoPowerOffTime}">
                                         </ComboBox>
                                         <Button Content="APPLY" Command="{Binding ApplyAutoPowerOffCommand}" Background="{StaticResource BrushDarkGray}" Foreground="{StaticResource BrushLightGray}" Padding="15,5" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0"/>
                                     </StackPanel>
